@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Bookings — EventHorizon</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
+<link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="nav-glass sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+        <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+      </div>
+      <span class="font-bold text-xl text-slate-900 dark:text-white">EventHorizon</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="/" class="text-sm font-medium text-slate-600 hover:text-primary-600">Home</a>
+      <a href="/events" class="text-sm font-medium text-slate-600 hover:text-primary-600">Events</a>
+      <a href="/bookings" class="text-sm font-semibold text-primary-600">My Bookings</a>
+      <a href="/tickets" class="text-sm font-medium text-slate-600 hover:text-primary-600">My Tickets</a>
+      <a href="/reviews" class="text-sm font-medium text-slate-600 hover:text-primary-600">Reviews</a>
+    </div>
+     <!-- <a href="/users/logout" class="btn-secondary text-sm py-2.5 px-5">Sign Out</a> -->
+
+    <!-- New versions -->
+    <div class="flex items-center gap-3">
+      <a href="/admin/login"
+         class="text-sm font-medium text-slate-600 hover:text-primary-600">Admin</a>
+
+      <div th:if="${session.loggedInUser == null}">
+        <a href="/users/login"
+           class="btn-primary text-sm py-2.5 px-5">Sign In</a>
+      </div>
+
+      <div th:if="${session.loggedInUser != null}"
+           class="flex items-center gap-3">
+
+        <!-- change user / profile line -->
+
+        <a th:href="${session.isAdmin != null} ? '/admin' : '/users/profile'"
+           class="flex items-center gap-2 hover:opacity-80">
+          <div class="w-9 h-9 rounded-full bg-primary-600
+                  flex items-center justify-center
+                  text-white font-bold text-sm">
+        <span th:text="${#strings.substring(
+              session.loggedInUser.name,0,1)}">U</span>
+          </div>
+          <span class="text-sm font-semibold text-slate-700"
+                th:text="${session.loggedInUser.name}">User</span>
+        </a>
+        <a href="/users/logout"
+           class="btn-secondary text-sm py-2 px-4">Sign Out</a>
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">My Bookings</h1>
+      <p class="text-slate-500 mt-1">Track all your event bookings here</p>
+    </div>
+    <a href="/events" class="btn-primary text-sm inline-flex items-center gap-2">
+      <i data-lucide="plus" class="w-4 h-4"></i> Book More Events
+    </a>
+  </div>
+
+  <!-- Flash Messages -->
+  <div th:if="${success}" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl text-sm font-medium mb-6" th:text="${success}"></div>
+  <div th:if="${error}" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium mb-6" th:text="${error}"></div>
+
+  <!-- Empty State -->
+  <div th:if="${#lists.isEmpty(bookings)}" class="pro-card p-16 text-center">
+    <i data-lucide="calendar-x" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
+    <h3 class="text-xl font-bold text-slate-700 mb-2">No bookings yet</h3>
+    <p class="text-slate-500 mb-6">Start exploring events and book your first ticket!</p>
+    <a href="/events" class="btn-primary inline-block">Browse Events</a>
+  </div>
+
+  <!-- Bookings Table -->
+  <div th:if="${not #lists.isEmpty(bookings)}" class="pro-card overflow-hidden">
+    <table class="w-full pro-table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Tickets</th>
+          <th>Booked At</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="booking : ${bookings}">
+          <td>
+            <div class="font-semibold text-slate-900 dark:text-white" th:text="${booking.eventTitle}">Event</div>
+            <div class="text-xs text-slate-400" th:text="'Booking #' + ${booking.id}">ID</div>
+          </td>
+          <td>
+            <div class="font-semibold" th:text="${booking.quantity}">1</div>
+            <div class="text-xs text-slate-400">tickets</div>
+          </td>
+          <td class="text-sm text-slate-500" th:text="${#temporals.format(booking.bookedAt, 'dd MMM yyyy')}">Date</td>
+          <td>
+            <span class="badge badge-pending" th:if="${booking.status == 'pending'}">Pending</span>
+            <span class="badge badge-approved" th:if="${booking.status == 'approved'}">Approved</span>
+            <span class="badge badge-rejected" th:if="${booking.status == 'rejected'}">Rejected</span>
+          </td>
+          <td>
+            <form th:action="@{/bookings/cancel}" method="post" th:if="${booking.status == 'pending'}">
+              <input type="hidden" name="id" th:value="${booking.id}">
+              <button type="submit" class="btn-danger text-xs py-1.5 px-3"
+                onclick="return confirm('Cancel this booking?')">Cancel</button>
+            </form>
+            <span th:if="${booking.status != 'pending'}" class="text-xs text-slate-400">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

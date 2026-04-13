@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events — EventHorizon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
+  <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+
+<nav class="nav-glass sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+        <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+      </div>
+      <span class="font-bold text-xl text-slate-900 dark:text-white">EventHorizon</span>
+    </a>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="/" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">Home</a>
+      <a href="/events" class="text-sm font-semibold text-primary-600">Events</a>
+      <a href="/bookings" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">My Bookings</a>
+      <a href="/tickets" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">My Tickets</a>
+      <a href="/reviews" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">Reviews</a>
+    </div>
+
+    <div class="flex items-center gap-4">
+
+      <th:block th:if="${session.loggedInAdmin != null}">
+        <span class="text-sm font-bold text-red-500">👀 Admin View</span>
+        <a href="/admin" class="btn-primary text-sm py-2 px-4">Back to Dashboard</a>
+      </th:block>
+
+      <th:block th:if="${session.loggedInUser != null}">
+        <a href="/users/profile" class="flex items-center gap-2 hover:opacity-80">
+          <div class="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold text-sm">
+            <span th:text="${#strings.substring(session.loggedInUser.name, 0, 1)}">U</span>
+          </div>
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300" th:text="${session.loggedInUser.name}">User</span>
+        </a>
+        <a href="/users/logout" class="btn-secondary text-sm py-2 px-4">Sign Out</a>
+      </th:block>
+
+      <th:block th:if="${session.loggedInUser == null and session.loggedInAdmin == null}">
+        <a href="/admin/login" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">Admin</a>
+        <a href="/users/login" class="btn-primary text-sm py-2.5 px-5">Sign In</a>
+      </th:block>
+
+    </div>
+  </div>
+</nav>
+
+<div class="bg-gradient-to-br from-primary-600 to-purple-700 py-14 px-6">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-4xl font-extrabold text-white mb-3">Browse Events</h1>
+    <p class="text-primary-100 mb-8">Discover amazing events happening near you</p>
+    <form th:action="@{/events}" method="get" class="flex gap-3 max-w-2xl">
+      <input type="text" name="search" th:value="${search}" placeholder="Search events..." class="pro-input flex-1">
+      <button type="submit" class="btn-primary px-6">Search</button>
+    </form>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <a href="/events" class="px-4 py-2 rounded-full text-sm font-semibold bg-white text-primary-700">All</a>
+      <a href="/events?category=Music" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🎵 Music</a>
+      <a href="/events?category=Sports" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🏅 Sports</a>
+      <a href="/events?category=Technology" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">💻 Tech</a>
+      <a href="/events?category=Arts" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🎨 Arts</a>
+      <a href="/events?category=Food" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🍕 Food</a>
+    </div>
+  </div>
+</div>
+
+<div th:if="${success}" class="max-w-7xl mx-auto px-6 mt-4">
+  <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl text-sm font-medium" th:text="${success}"></div>
+</div>
+<div th:if="${error}" class="max-w-7xl mx-auto px-6 mt-4">
+  <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium" th:text="${error}"></div>
+</div>
+
+<div class="max-w-7xl mx-auto px-6 py-12">
+  <div th:if="${#lists.isEmpty(events)}" class="text-center py-20">
+    <i data-lucide="calendar-x" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
+    <h3 class="text-xl font-bold text-slate-700 mb-2">No events found</h3>
+    <p class="text-slate-500">Try a different search or check back soon!</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div th:each="event : ${events}" class="pro-card event-card overflow-hidden fade-in">
+      <div class="h-48 bg-gradient-to-br from-primary-400 to-purple-600 relative">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <i data-lucide="calendar" class="w-16 h-16 text-white opacity-30"></i>
+        </div>
+        <div class="absolute top-4 left-4">
+          <span class="badge bg-white text-primary-700 text-xs" th:text="${event.category}">Category</span>
+        </div>
+        <div class="absolute bottom-4 right-4 bg-black/40 backdrop-blur rounded-lg px-3 py-1">
+          <span class="text-white font-bold text-lg" th:text="'$' + ${event.price}">$0</span>
+        </div>
+        <div th:if="${event.availableTickets == 0}" class="absolute inset-0 bg-black/60 flex items-center justify-center">
+          <span class="text-white font-bold text-xl">SOLD OUT</span>
+        </div>
+      </div>
+
+      <div class="p-5">
+        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-3 line-clamp-2" th:text="${event.title}">Event Title</h3>
+        <div class="space-y-2 mb-4">
+          <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i>
+            <span th:text="${event.venue}">Venue</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i data-lucide="ticket" class="w-4 h-4 flex-shrink-0"></i>
+            <span th:text="${event.availableTickets} + ' tickets available'">Tickets</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-slate-500" th:if="${event.description}">
+            <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
+            <span class="line-clamp-1" th:text="${event.description}">Description</span>
+          </div>
+        </div>
+
+        <form th:action="@{/bookings/create}" method="post" class="flex gap-2" th:if="${event.availableTickets > 0}">
+          <input type="hidden" name="eventId" th:value="${event.id}">
+          <input type="number" name="quantity" value="1" min="1"
+                 th:max="${event.availableTickets}"
+                 class="pro-input w-20 text-center py-2.5">
+          <button type="submit" class="btn-primary flex-1 text-sm py-2.5">
+            Book Now
+          </button>
+        </form>
+        <button th:if="${event.availableTickets == 0}" disabled class="btn-primary w-full opacity-50 cursor-not-allowed text-sm py-2.5">
+          Sold Out
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="bg-slate-900 text-white py-10 px-6 mt-10">
+  <div class="max-w-7xl mx-auto text-center text-slate-400 text-sm">
+    © 2024 EventHorizon — SE1020 OOP Group Project
+  </div>
+</footer>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

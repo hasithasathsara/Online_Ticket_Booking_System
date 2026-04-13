@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile — EventHorizon</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
+<link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<nav class="nav-glass sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center">
+        <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+      </div>
+      <span class="font-bold text-xl text-slate-900 dark:text-white">EventHorizon</span>
+    </a>
+    <a href="/users/logout" class="btn-secondary text-sm py-2.5 px-5">Sign Out</a>
+  </div>
+</nav>
+
+<div class="max-w-2xl mx-auto px-6 py-12">
+  <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-8">My Profile</h1>
+
+  <div th:if="${success}" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl text-sm font-medium mb-6" th:text="${success}"></div>
+  <div th:if="${error}" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium mb-6" th:text="${error}"></div>
+
+  <div class="pro-card p-8">
+    <div class="flex items-center gap-4 mb-8">
+      <div class="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
+        <span class="text-primary-700 font-bold text-2xl" th:text="${#strings.substring(user.name, 0, 1)}">U</span>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white" th:text="${user.name}">Name</h2>
+        <p class="text-slate-500 text-sm" th:text="${user.email}">Email</p>
+        <span class="badge badge-active mt-1" th:text="${user.userType}">Type</span>
+      </div>
+    </div>
+
+    <form th:action="@{/users/update}" method="post">
+      <input type="hidden" name="id" th:value="${user.id}">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
+          <input type="text" name="name" required th:value="${user.name}" class="pro-input">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
+          <input type="email" name="email" required th:value="${user.email}" class="pro-input">
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">New Password (leave blank to keep current)</label>
+          <input type="password" name="password" placeholder="New password..." class="pro-input">
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button type="submit" class="btn-primary px-8">Save Changes</button>
+        <a href="/" class="btn-secondary px-6">Cancel</a>
+      </div>
+    </form>
+
+    <div class="border-t border-slate-100 dark:border-slate-800 mt-8 pt-6">
+      <h3 class="font-bold text-red-600 mb-3">Danger Zone</h3>
+      <form th:action="@{/users/delete}" method="post">
+        <input type="hidden" name="id" th:value="${user.id}">
+        <button type="submit" class="btn-danger text-sm"
+          onclick="return confirm('Are you sure? This cannot be undone!')">Delete My Account</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="flex gap-4 mt-6">
+    <a href="/bookings" class="pro-card p-4 flex-1 text-center hover:border-primary-300 transition-colors">
+      <i data-lucide="ticket" class="w-6 h-6 text-primary-600 mx-auto mb-2"></i>
+      <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">My Bookings</span>
+    </a>
+    <a href="/tickets" class="pro-card p-4 flex-1 text-center hover:border-primary-300 transition-colors">
+      <i data-lucide="qr-code" class="w-6 h-6 text-purple-600 mx-auto mb-2"></i>
+      <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">My Tickets</span>
+    </a>
+    <a href="/reviews" class="pro-card p-4 flex-1 text-center hover:border-primary-300 transition-colors">
+      <i data-lucide="star" class="w-6 h-6 text-yellow-600 mx-auto mb-2"></i>
+      <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">My Reviews</span>
+    </a>
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>
