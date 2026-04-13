@@ -197,14 +197,20 @@
           <td class="font-semibold text-slate-900 dark:text-white" th:text="${event.title}">Title</td>
           <td><span class="badge bg-primary-100 text-primary-700" th:text="${event.category}">Cat</span></td>
           <td class="text-slate-500 text-sm" th:text="${event.venue}">Venue</td>
+
+
+
           <td>
             <span class="font-semibold" th:text="${event.availableTickets}">0</span>
-            <span class="text-slate-400 text-xs" th:text="'/' + ${event.totalTickets}">/ 0</span>
+            <span class="text-slate-400 text-xs">Available</span>
           </td>
+
+
           <td class="font-semibold" th:text="'$' + ${event.price}">$0</td>
           <td>
             <div class="flex gap-2">
-              <a th:href="@{'/events/edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
+              <a th:href="@{'/events/admin-edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
+
               <form th:action="@{/events/delete}" method="post" class="inline">
                 <input type="hidden" name="id" th:value="${event.id}">
                 <button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this event?')">Delete</button>

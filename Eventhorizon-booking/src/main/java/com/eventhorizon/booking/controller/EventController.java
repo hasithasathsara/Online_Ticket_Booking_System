@@ -14,14 +14,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-// =============================================
-// EVENTCONTROLLER.JAVA — Member 02
-// CREATE  → /events/create  (POST)
-// READ    → /events         (GET)
-// UPDATE  → /events/update  (POST)
-// DELETE  → /events/delete  (POST)
-// =============================================
-
 @Controller
 @RequestMapping("/events")
 public class EventController {
@@ -29,13 +21,11 @@ public class EventController {
     @Autowired
     private EventRepository eventRepository;
 
-    // ── READ — Show all events ───────────────────
     @GetMapping
     public String listEvents(@RequestParam(required = false) String search,
                              @RequestParam(required = false) String category,
                              Model model) {
         List<Event> events;
-
         if (search != null && !search.isEmpty()) {
             events = eventRepository.findByTitleContainingIgnoreCase(search);
         } else if (category != null && !category.isEmpty()) {
@@ -43,14 +33,12 @@ public class EventController {
         } else {
             events = eventRepository.findAll();
         }
-
         model.addAttribute("events", events);
         model.addAttribute("search", search);
         model.addAttribute("selectedCategory", category);
-        return "events"; // → templates/events.html
+        return "events";
     }
 
-    // ── READ — View single event ─────────────────
     @GetMapping("/{id}")
     public String viewEvent(@PathVariable Long id, Model model) {
         Optional<Event> eventOpt = eventRepository.findById(id);
@@ -59,16 +47,13 @@ public class EventController {
         return "events";
     }
 
-    // ── CREATE — Show create form (admin only) ───
     @GetMapping("/create")
     public String showCreateForm(HttpSession session, Model model) {
-        if (session.getAttribute("loggedInUser") == null)
-            return "redirect:/users/login";
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
         model.addAttribute("event", new PhysicalEvent());
         return "admin";
     }
 
-    // ── CREATE — Process new event ───────────────
     @PostMapping("/create")
     public String createEvent(@RequestParam String title,
                               @RequestParam String category,
@@ -78,7 +63,10 @@ public class EventController {
                               @RequestParam int totalTickets,
                               @RequestParam BigDecimal price,
                               @RequestParam(required = false) Integer venueCapacity,
+                              HttpSession session,
                               RedirectAttributes redirectAttributes) {
+
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
 
         PhysicalEvent event = new PhysicalEvent();
         event.setTitle(title);
@@ -86,43 +74,47 @@ public class EventController {
         event.setVenue(venue);
         event.setDescription(description);
         event.setEventDate(LocalDateTime.parse(eventDate.replace("T", "T").length() == 16
-                ? eventDate + ":00" : eventDate,
+                        ? eventDate + ":00" : eventDate,
                 java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
         event.setTotalTickets(totalTickets);
-        event.setAvailableTickets(totalTickets);
+        event.setAvailableTickets(totalTickets); // මුලින් හදද්දී Total = Available
         event.setPrice(price);
         if (venueCapacity != null) event.setVenueCapacity(venueCapacity);
 
         eventRepository.save(event);
         redirectAttributes.addFlashAttribute("success", "Event created successfully!");
-        return "redirect:/events";
+        return "redirect:/admin";
     }
 
-    // ── UPDATE — Show update form ─────────────────
-    @GetMapping("/edit/{id}")
+    @GetMapping("/admin-edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model, HttpSession session) {
-        if (session.getAttribute("loggedInUser") == null)
-            return "redirect:/users/login";
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
         Optional<Event> eventOpt = eventRepository.findById(id);
-        if (eventOpt.isEmpty()) return "redirect:/events";
+        if (eventOpt.isEmpty()) return "redirect:/admin";
+
         model.addAttribute("event", eventOpt.get());
-        return "admin";
+        return "edit-event";
     }
 
-    // ── UPDATE — Process update ───────────────────
-    @PostMapping("/update")
+    // 🌟 මෙතනින් Automatic Math එක අයින් කරලා, අලුත් availableTickets parameter එක දැම්මා 🌟
+    @PostMapping("/admin-update")
     public String updateEvent(@RequestParam Long id,
                               @RequestParam String title,
                               @RequestParam String category,
                               @RequestParam String venue,
                               @RequestParam String description,
                               @RequestParam int totalTickets,
+                              @RequestParam int availableTickets,
                               @RequestParam BigDecimal price,
+                              HttpSession session,
                               RedirectAttributes redirectAttributes) {
+
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
+
         Optional<Event> eventOpt = eventRepository.findById(id);
         if (eventOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Event not found!");
-            return "redirect:/events";
+            return "redirect:/admin";
         }
 
         Event event = eventOpt.get();
@@ -130,20 +122,23 @@ public class EventController {
         event.setCategory(category);
         event.setVenue(venue);
         event.setDescription(description);
+
+        // Admin දෙන ගාණ කෙලින්ම Database එකට දානවා!
         event.setTotalTickets(totalTickets);
+        event.setAvailableTickets(availableTickets);
+
         event.setPrice(price);
         eventRepository.save(event);
 
         redirectAttributes.addFlashAttribute("success", "Event updated successfully!");
-        return "redirect:/events";
+        return "redirect:/admin";
     }
 
-    // ── DELETE — Delete event ─────────────────────
     @PostMapping("/delete")
-    public String deleteEvent(@RequestParam Long id,
-                              RedirectAttributes redirectAttributes) {
+    public String deleteEvent(@RequestParam Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("loggedInAdmin") == null) return "redirect:/admin/login";
         eventRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("success", "Event deleted successfully!");
-        return "redirect:/events";
+        return "redirect:/admin";
     }
 }
