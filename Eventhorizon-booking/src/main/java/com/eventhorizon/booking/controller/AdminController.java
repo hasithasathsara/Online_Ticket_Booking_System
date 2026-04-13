@@ -66,7 +66,6 @@ public class AdminController {
         return "admin";
     }
 
-    // UPDATED: Dynamic Login URL passed to view
     @GetMapping("/login")
     public String showAdminLogin(Model model) {
         model.addAttribute("loginAction", "/admin/login");
@@ -85,8 +84,8 @@ public class AdminController {
             return "redirect:/admin/login";
         }
 
+        // Only save as Admin
         session.setAttribute("loggedInAdmin", adminOpt.get());
-        //session.setAttribute("loggedInUser", adminOpt.get());
         session.setAttribute("isAdmin", true);
 
         redirectAttributes.addFlashAttribute("success", "Welcome, Admin " + adminOpt.get().getName() + "!");
@@ -117,6 +116,7 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    // SUPER ADMIN UPDATING A SUB-ADMIN
     @PostMapping("/update")
     public String updateAdmin(@RequestParam Long id,
                               @RequestParam String name,
@@ -131,11 +131,11 @@ public class AdminController {
 
         AdminUser admin = adminOpt.get();
         admin.setName(name);
-        admin.setEmail(email);
+        admin.setEmail(email); // Super Admin can change email
         admin.setPermissions(permissions);
         adminRepository.save(admin);
 
-        redirectAttributes.addFlashAttribute("success", "Admin updated!");
+        redirectAttributes.addFlashAttribute("success", "Admin updated successfully!");
         return "redirect:/admin";
     }
 
@@ -150,5 +150,59 @@ public class AdminController {
     public String adminLogout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
+    }
+
+    // ==========================================
+    // NEW METHODS ADDED FOR PROFILE & EDITING
+    // ==========================================
+
+    // 1. Show Admin's own profile
+    @GetMapping("/profile")
+    public String showAdminProfile(HttpSession session, Model model) {
+        AdminUser admin = (AdminUser) session.getAttribute("loggedInAdmin");
+        if (admin == null) return "redirect:/admin/login";
+
+        model.addAttribute("admin", admin);
+        return "admin-profile";
+    }
+
+    // 2. Update Admin's own profile (No Email Update Allowed Here)
+    @PostMapping("/profile/update")
+    public String updateOwnProfile(@RequestParam String name,
+                                   @RequestParam(required = false) String password,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        AdminUser currentAdmin = (AdminUser) session.getAttribute("loggedInAdmin");
+        if (currentAdmin == null) return "redirect:/admin/login";
+
+        // Only Name and Password can be updated by the user themselves
+        currentAdmin.setName(name);
+        if (password != null && !password.isEmpty()) {
+            currentAdmin.setPassword(password);
+        }
+        adminRepository.save(currentAdmin);
+
+        session.setAttribute("loggedInAdmin", currentAdmin);
+        redirectAttributes.addFlashAttribute("success", "Your profile was updated successfully!");
+        return "redirect:/admin/profile";
+    }
+
+    // 3. Super Admin fetching Sub-Admin details for the Edit Form
+    @GetMapping("/edit-subadmin/{id}")
+    public String showEditAdminForm(@PathVariable Long id, Model model, HttpSession session) {
+        AdminUser currentAdmin = (AdminUser) session.getAttribute("loggedInAdmin");
+
+        // Block if not Super Admin
+        if (currentAdmin == null || !"super".equals(currentAdmin.getAdminLevel())) {
+            return "redirect:/admin";
+        }
+
+        Optional<AdminUser> targetAdmin = adminRepository.findById(id);
+        if (targetAdmin.isPresent()) {
+            model.addAttribute("targetAdmin", targetAdmin.get());
+            return "edit-admin";
+        }
+
+        return "redirect:/admin";
     }
 }

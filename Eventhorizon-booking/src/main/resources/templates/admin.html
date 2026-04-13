@@ -30,6 +30,9 @@
       <span class="text-sm text-slate-500" th:text="'Welcome, ' + ${admin?.name}">Admin</span>
       <span class="badge badge-active" th:text="${admin?.adminLevel}">Role</span>
       <a href="/" class="btn-secondary text-sm py-2 px-4">View Site</a>
+
+      <a href="/admin/profile" class="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-primary-600 px-2">My Profile</a>
+
       <a href="/admin/logout" class="btn-danger text-sm py-2 px-4">Logout</a>
     </div>
   </div>
@@ -200,10 +203,13 @@
           </td>
           <td class="font-semibold" th:text="'$' + ${event.price}">$0</td>
           <td>
-            <form th:action="@{/events/delete}" method="post" class="inline">
-              <input type="hidden" name="id" th:value="${event.id}">
-              <button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this event?')">Delete</button>
-            </form>
+            <div class="flex gap-2">
+              <a th:href="@{'/events/edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
+              <form th:action="@{/events/delete}" method="post" class="inline">
+                <input type="hidden" name="id" th:value="${event.id}">
+                <button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this event?')">Delete</button>
+              </form>
+            </div>
           </td>
         </tr>
         </tbody>
@@ -281,10 +287,14 @@
           <td><span class="badge badge-approved" th:text="${a.adminLevel}">Level</span></td>
           <td class="text-slate-500 text-sm" th:text="${a.permissions}">Permissions</td>
           <td>
-            <form th:action="@{/admin/delete}" method="post" class="inline">
-              <input type="hidden" name="id" th:value="${a.id}">
-              <button th:if="${a.adminLevel != 'super'}" type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Remove this admin?')">Remove</button>
-            </form>
+            <div class="flex gap-2">
+              <a th:if="${a.adminLevel != 'super'}" th:href="@{'/admin/edit-subadmin/' + ${a.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
+
+              <form th:action="@{/admin/delete}" method="post" class="inline">
+                <input type="hidden" name="id" th:value="${a.id}">
+                <button th:if="${a.adminLevel != 'super'}" type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Remove this admin?')">Remove</button>
+              </form>
+            </div>
           </td>
         </tr>
         </tbody>

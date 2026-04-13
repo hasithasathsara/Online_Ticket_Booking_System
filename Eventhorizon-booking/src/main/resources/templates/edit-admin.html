@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Sub-Admin — Super Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 min-h-screen p-6 md:p-12 flex items-center justify-center">
+<div class="w-full max-w-2xl pro-card p-8">
+    <div class="flex items-center justify-between mb-6 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Edit Sub-Admin</h2>
+            <p class="text-sm text-slate-500">Super Admin Controls</p>
+        </div>
+        <span class="badge badge-active text-sm">Super Admin Portal</span>
+    </div>
+
+    <form th:action="@{/admin/update}" method="post" class="space-y-5">
+        <input type="hidden" name="id" th:value="${targetAdmin.id}">
+
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
+            <input type="text" name="name" th:value="${targetAdmin.name}" class="pro-input" required>
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
+            <input type="email" name="email" th:value="${targetAdmin.email}" class="pro-input" required>
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Permissions</label>
+            <select name="permissions" class="pro-input">
+                <option th:selected="${targetAdmin.permissions == 'events'}" value="events">Events only</option>
+                <option th:selected="${targetAdmin.permissions == 'bookings'}" value="bookings">Bookings only</option>
+                <option th:selected="${targetAdmin.permissions == 'events,bookings'}" value="events,bookings">Events + Bookings</option>
+                <option th:selected="${targetAdmin.permissions == 'all'}" value="all">Full Access</option>
+            </select>
+        </div>
+
+        <div class="pt-4 flex flex-col sm:flex-row gap-3">
+            <button type="submit" class="btn-primary px-8 py-3">Save Changes</button>
+            <a href="/admin" class="btn-secondary px-8 py-3 flex items-center justify-center">Cancel</a>
+        </div>
+    </form>
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>
