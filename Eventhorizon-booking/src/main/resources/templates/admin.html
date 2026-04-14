@@ -30,9 +30,7 @@
       <span class="text-sm text-slate-500" th:text="'Welcome, ' + ${admin?.name}">Admin</span>
       <span class="badge badge-active" th:text="${admin?.adminLevel}">Role</span>
       <a href="/" class="btn-secondary text-sm py-2 px-4">View Site</a>
-
       <a href="/admin/profile" class="text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-primary-600 px-2">My Profile</a>
-
       <a href="/admin/logout" class="btn-danger text-sm py-2 px-4">Logout</a>
     </div>
   </div>
@@ -100,6 +98,7 @@
   <div th:if="${admin?.adminLevel == 'super' or #strings.contains(admin?.permissions, 'bookings') or admin?.permissions == 'all'}"
        id="panel-bookings" class="fade-in">
     <div class="pro-card overflow-hidden">
+
       <div class="p-5 border-b border-slate-100 dark:border-slate-800">
         <h3 class="font-bold text-lg text-slate-900 dark:text-white">Pending Bookings</h3>
         <p class="text-sm text-slate-500">Approve or reject booking requests</p>
@@ -134,6 +133,33 @@
         </tr>
         </tbody>
       </table>
+
+      <div class="p-5 border-t-8 border-slate-50 dark:border-slate-900 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+        <h3 class="font-bold text-lg text-slate-900 dark:text-white">Booking History</h3>
+        <p class="text-sm text-slate-500">Previously approved or rejected bookings</p>
+      </div>
+      <table class="w-full pro-table">
+        <thead>
+        <tr><th>#</th><th>Event</th><th>User ID</th><th>Qty</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+        <th:block th:each="b : ${allBookings}">
+          <tr th:if="${!#strings.equalsIgnoreCase(b.status, 'pending')}">
+            <td class="text-slate-400 text-sm" th:text="${b.id}">1</td>
+            <td><div class="font-semibold text-slate-900 dark:text-white" th:text="${b.eventTitle}">Event</div></td>
+            <td class="text-slate-500 text-sm" th:text="${b.userId}">User</td>
+            <td class="font-semibold" th:text="${b.quantity}">1</td>
+            <td>
+              <span th:if="${#strings.equalsIgnoreCase(b.status, 'approved')}" class="badge bg-green-100 text-green-700 font-bold px-2 py-1 rounded">Approved</span>
+              <span th:if="${#strings.equalsIgnoreCase(b.status, 'rejected')}" class="badge bg-red-100 text-red-700 font-bold px-2 py-1 rounded">Rejected</span>
+
+              <span th:if="${!#strings.equalsIgnoreCase(b.status, 'approved') and !#strings.equalsIgnoreCase(b.status, 'rejected')}" class="badge bg-gray-100 text-gray-700" th:text="${b.status}">Unknown</span>
+            </td>
+          </tr>
+        </th:block>
+        </tbody>
+      </table>
+
     </div>
   </div>
 
@@ -143,48 +169,20 @@
       <div class="p-6 border-b border-slate-100 dark:border-slate-800">
         <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-5">Add New Event</h3>
         <form th:action="@{/events/create}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Event Title</label>
-            <input type="text" name="title" required placeholder="e.g. DJ Night 2024" class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Category</label>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Event Title</label><input type="text" name="title" required class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Category</label>
             <select name="category" class="pro-input">
-              <option value="Music">🎵 Music</option>
-              <option value="Sports">🏅 Sports</option>
-              <option value="Technology">💻 Technology</option>
-              <option value="Arts">🎨 Arts</option>
-              <option value="Food">🍕 Food</option>
-              <option value="Business">💼 Business</option>
+              <option value="Music">🎵 Music</option><option value="Sports">🏅 Sports</option><option value="Technology">💻 Technology</option>
+              <option value="Arts">🎨 Arts</option><option value="Food">🍕 Food</option><option value="Business">💼 Business</option>
             </select>
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Venue Name</label>
-            <input type="text" name="venue" required placeholder="e.g. Colombo City Centre" class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Venue Capacity</label>
-            <input type="number" name="venueCapacity" required placeholder="e.g. 500" min="1" class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Event Date & Time</label>
-            <input type="datetime-local" name="eventDate" required class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Total Tickets</label>
-            <input type="number" name="totalTickets" required placeholder="200" min="1" class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Price (USD)</label>
-            <input type="number" name="price" required placeholder="10.00" step="0.01" min="0" class="pro-input">
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
-            <textarea name="description" rows="3" placeholder="Event description..." class="pro-input resize-none"></textarea>
-          </div>
-          <div class="md:col-span-2">
-            <button type="submit" class="btn-primary px-8">Create Event</button>
-          </div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Venue Name</label><input type="text" name="venue" required class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Venue Capacity</label><input type="number" name="venueCapacity" required min="1" class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Event Date & Time</label><input type="datetime-local" name="eventDate" required class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Total Tickets</label><input type="number" name="totalTickets" required min="1" class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Price (USD)</label><input type="number" name="price" required step="0.01" min="0" class="pro-input"></div>
+          <div class="md:col-span-2"><label class="block text-sm font-semibold text-slate-700 mb-2">Description</label><textarea name="description" rows="3" class="pro-input resize-none"></textarea></div>
+          <div class="md:col-span-2"><button type="submit" class="btn-primary px-8">Create Event</button></div>
         </form>
       </div>
 
@@ -197,20 +195,11 @@
           <td class="font-semibold text-slate-900 dark:text-white" th:text="${event.title}">Title</td>
           <td><span class="badge bg-primary-100 text-primary-700" th:text="${event.category}">Cat</span></td>
           <td class="text-slate-500 text-sm" th:text="${event.venue}">Venue</td>
-
-
-
-          <td>
-            <span class="font-semibold" th:text="${event.availableTickets}">0</span>
-            <span class="text-slate-400 text-xs">Available</span>
-          </td>
-
-
+          <td><span class="font-semibold" th:text="${event.availableTickets}">0</span><span class="text-slate-400 text-xs"> Available</span></td>
           <td class="font-semibold" th:text="'$' + ${event.price}">$0</td>
           <td>
             <div class="flex gap-2">
               <a th:href="@{'/events/admin-edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
-
               <form th:action="@{/events/delete}" method="post" class="inline">
                 <input type="hidden" name="id" th:value="${event.id}">
                 <button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this event?')">Delete</button>
@@ -225,13 +214,9 @@
 
   <div th:if="${admin?.adminLevel == 'super'}" id="panel-users" class="hidden fade-in">
     <div class="pro-card overflow-hidden">
-      <div class="p-5 border-b border-slate-100 dark:border-slate-800">
-        <h3 class="font-bold text-lg text-slate-900 dark:text-white">All Users</h3>
-      </div>
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800"><h3 class="font-bold text-lg text-slate-900 dark:text-white">All Users</h3></div>
       <table class="w-full pro-table">
-        <thead>
-        <tr><th>#</th><th>Name</th><th>Email</th><th>Type</th><th>Actions</th></tr>
-        </thead>
+        <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Type</th><th>Actions</th></tr></thead>
         <tbody>
         <tr th:each="user : ${allUsers}">
           <td class="text-slate-400 text-sm" th:text="${user.id}">1</td>
@@ -240,8 +225,7 @@
           <td><span class="badge badge-active" th:text="${user.userType}">Type</span></td>
           <td>
             <form th:action="@{/users/delete}" method="post" class="inline">
-              <input type="hidden" name="id" th:value="${user.id}">
-              <button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this user?')">Delete</button>
+              <input type="hidden" name="id" th:value="${user.id}"><button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this user?')">Delete</button>
             </form>
           </td>
         </tr>
@@ -255,37 +239,20 @@
       <div class="p-6 border-b border-slate-100 dark:border-slate-800">
         <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-5">Add Sub-Admin</h3>
         <form th:action="@{/admin/create}" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Name</label>
-            <input type="text" name="name" required placeholder="Admin Name" class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Email</label>
-            <input type="email" name="email" required placeholder="admin@example.com" class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Password</label>
-            <input type="password" name="password" required placeholder="Min 6 characters" class="pro-input">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Permissions</label>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Name</label><input type="text" name="name" required class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Email</label><input type="email" name="email" required class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Password</label><input type="password" name="password" required class="pro-input"></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Permissions</label>
             <select name="permissions" class="pro-input">
-              <option value="events">Events only</option>
-              <option value="bookings">Bookings only</option>
-              <option value="events,bookings">Events + Bookings</option>
-              <option value="all">Full Access</option>
+              <option value="events">Events only</option><option value="bookings">Bookings only</option><option value="events,bookings">Events + Bookings</option><option value="all">Full Access</option>
             </select>
           </div>
-          <div class="md:col-span-2">
-            <button type="submit" class="btn-primary px-8">Create Admin</button>
-          </div>
+          <div class="md:col-span-2"><button type="submit" class="btn-primary px-8">Create Admin</button></div>
         </form>
       </div>
 
       <table class="w-full pro-table">
-        <thead>
-        <tr><th>Name</th><th>Email</th><th>Level</th><th>Permissions</th><th>Actions</th></tr>
-        </thead>
+        <thead><tr><th>Name</th><th>Email</th><th>Level</th><th>Permissions</th><th>Actions</th></tr></thead>
         <tbody>
         <tr th:each="a : ${allAdmins}">
           <td class="font-semibold text-slate-900 dark:text-white" th:text="${a.name}">Name</td>
@@ -294,8 +261,7 @@
           <td class="text-slate-500 text-sm" th:text="${a.permissions}">Permissions</td>
           <td>
             <div class="flex gap-2">
-              <a th:if="${a.adminLevel != 'super'}" th:href="@{'/admin/edit-subadmin/' + ${a.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
-
+              <a th:if="${a.adminLevel != 'super'}" th:href="@{'/admin/edit-subadmin/' + ${a.id}}" class="btn-secondary text-xs py-1.5 px-3">Edit</a>
               <form th:action="@{/admin/delete}" method="post" class="inline">
                 <input type="hidden" name="id" th:value="${a.id}">
                 <button th:if="${a.adminLevel != 'super'}" type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Remove this admin?')">Remove</button>

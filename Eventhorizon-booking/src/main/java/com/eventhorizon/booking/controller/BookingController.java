@@ -18,10 +18,6 @@ import java.util.Optional;
 
 // =============================================
 // BOOKINGCONTROLLER.JAVA — Member 03
-// CREATE  → /bookings/create  (POST)
-// READ    → /bookings         (GET)
-// UPDATE  → /bookings/approve (POST)
-// DELETE  → /bookings/cancel  (POST)
 // =============================================
 
 @Controller
@@ -45,7 +41,7 @@ public class BookingController {
 
         List<Booking> bookings = bookingRepository.findByUserId(loggedInUser.getId());
         model.addAttribute("bookings", bookings);
-        return "bookings"; // → templates/bookings.html
+        return "bookings";
     }
 
     // ── READ — View all bookings (admin only) ────
@@ -55,7 +51,7 @@ public class BookingController {
         List<Booking> pending  = bookingRepository.findByStatus("pending");
         model.addAttribute("bookings", bookings);
         model.addAttribute("pendingBookings", pending);
-        return "admin"; // → templates/admin.html
+        return "admin";
     }
 
     // ── CREATE — Book tickets for an event ───────
@@ -75,28 +71,25 @@ public class BookingController {
 
         Event event = eventOpt.get();
 
-        // Check availability
         if (event.getAvailableTickets() < quantity) {
             redirectAttributes.addFlashAttribute("error",
-                "Only " + event.getAvailableTickets() + " tickets available!");
+                    "Only " + event.getAvailableTickets() + " tickets available!");
             return "redirect:/events";
         }
 
-        // Create booking
         Booking booking = new Booking(
-            loggedInUser.getId(),
-            eventId,
-            event.getTitle(),
-            quantity
+                loggedInUser.getId(),
+                eventId,
+                event.getTitle(),
+                quantity
         );
         bookingRepository.save(booking);
 
-        // Reduce available tickets
         event.setAvailableTickets(event.getAvailableTickets() - quantity);
         eventRepository.save(event);
 
         redirectAttributes.addFlashAttribute("success",
-            "Booking submitted! Awaiting admin approval.");
+                "Booking submitted! Awaiting admin approval.");
         return "redirect:/bookings";
     }
 
@@ -107,28 +100,27 @@ public class BookingController {
         Optional<Booking> bookingOpt = bookingRepository.findById(id);
         if (bookingOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Booking not found!");
-            return "redirect:/bookings/all";
+            return "redirect:/admin"; // 🌟 Changed here 🌟
         }
 
         Booking booking = bookingOpt.get();
-        booking.approve(); // Uses the approve() method in Booking.java
+        booking.approve();
         bookingRepository.save(booking);
 
-        // Auto-generate tickets when approved
         for (int i = 0; i < booking.getQuantity(); i++) {
             Ticket ticket = new Ticket(
-                booking.getId(),
-                booking.getUserId(),
-                "User #" + booking.getUserId(),
-                booking.getEventTitle(),
-                "Check event page"
+                    booking.getId(),
+                    booking.getUserId(),
+                    "User #" + booking.getUserId(),
+                    booking.getEventTitle(),
+                    "Check event page"
             );
             ticketRepository.save(ticket);
         }
 
         redirectAttributes.addFlashAttribute("success",
-            "Booking approved! Tickets generated.");
-        return "redirect:/bookings/all";
+                "Booking approved! Tickets generated.");
+        return "redirect:/admin"; // 🌟 Changed here 🌟
     }
 
     // ── UPDATE — Admin rejects booking ───────────
@@ -138,14 +130,13 @@ public class BookingController {
         Optional<Booking> bookingOpt = bookingRepository.findById(id);
         if (bookingOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Booking not found!");
-            return "redirect:/bookings/all";
+            return "redirect:/admin"; // 🌟 Changed here 🌟
         }
 
         Booking booking = bookingOpt.get();
         booking.reject();
         bookingRepository.save(booking);
 
-        // Restore tickets back to event
         Optional<Event> eventOpt = eventRepository.findById(booking.getEventId());
         eventOpt.ifPresent(event -> {
             event.setAvailableTickets(event.getAvailableTickets() + booking.getQuantity());
@@ -153,7 +144,7 @@ public class BookingController {
         });
 
         redirectAttributes.addFlashAttribute("success", "Booking rejected.");
-        return "redirect:/bookings/all";
+        return "redirect:/admin"; // 🌟 Changed here 🌟
     }
 
     // ── DELETE — User cancels their own booking ──
@@ -171,7 +162,6 @@ public class BookingController {
         booking.cancel();
         bookingRepository.save(booking);
 
-        // Restore tickets to event
         Optional<Event> eventOpt = eventRepository.findById(booking.getEventId());
         eventOpt.ifPresent(event -> {
             event.setAvailableTickets(event.getAvailableTickets() + booking.getQuantity());
