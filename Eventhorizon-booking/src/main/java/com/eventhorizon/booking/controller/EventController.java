@@ -63,6 +63,7 @@ public class EventController {
                               @RequestParam int totalTickets,
                               @RequestParam BigDecimal price,
                               @RequestParam(required = false) Integer venueCapacity,
+                              @RequestParam(required = false) String imageUrl, // 🌟 Aluth Image URL Parameter eka
                               HttpSession session,
                               RedirectAttributes redirectAttributes) {
 
@@ -77,8 +78,9 @@ public class EventController {
                         ? eventDate + ":00" : eventDate,
                 java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
         event.setTotalTickets(totalTickets);
-        event.setAvailableTickets(totalTickets); // මුලින් හදද්දී Total = Available
+        event.setAvailableTickets(totalTickets);
         event.setPrice(price);
+        event.setImageUrl(imageUrl); // 🌟 Image URL eka save kireema
         if (venueCapacity != null) event.setVenueCapacity(venueCapacity);
 
         eventRepository.save(event);
@@ -96,7 +98,6 @@ public class EventController {
         return "edit-event";
     }
 
-    // 🌟 මෙතනින් Automatic Math එක අයින් කරලා, අලුත් availableTickets parameter එක දැම්මා 🌟
     @PostMapping("/admin-update")
     public String updateEvent(@RequestParam Long id,
                               @RequestParam String title,
@@ -106,6 +107,7 @@ public class EventController {
                               @RequestParam int totalTickets,
                               @RequestParam int availableTickets,
                               @RequestParam BigDecimal price,
+                              @RequestParam(required = false) String imageUrl, // 🌟 Update ekatath add kala
                               HttpSession session,
                               RedirectAttributes redirectAttributes) {
 
@@ -122,12 +124,11 @@ public class EventController {
         event.setCategory(category);
         event.setVenue(venue);
         event.setDescription(description);
-
-        // Admin දෙන ගාණ කෙලින්ම Database එකට දානවා!
         event.setTotalTickets(totalTickets);
         event.setAvailableTickets(availableTickets);
-
         event.setPrice(price);
+        event.setImageUrl(imageUrl); // 🌟 Update image url
+
         eventRepository.save(event);
 
         redirectAttributes.addFlashAttribute("success", "Event updated successfully!");

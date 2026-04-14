@@ -59,6 +59,12 @@ public class UserController {
             return "redirect:/users/login";
         }
 
+        // 🌟 🌟 🌟 FIX FOR ADMIN BUG 🌟 🌟 🌟
+        // අලුතින් User කෙනෙක් ලොග් වෙද්දී, පරණ Admin Session මොනවා හරි තියෙනවා නම් ඒවා මකලා දානවා!
+        session.removeAttribute("loggedInAdmin");
+        session.removeAttribute("isAdmin");
+        // 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟
+
         session.setAttribute("loggedInUser", userOpt.get());
         session.setAttribute("userId", userOpt.get().getId());
         session.setAttribute("userName", userOpt.get().getName());

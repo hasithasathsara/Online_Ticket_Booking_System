@@ -11,6 +11,27 @@
   <style>
     .admin-tab.active{background:white;color:#4f46e5;box-shadow:0 1px 3px rgb(0 0 0/.1);}
     html.dark .admin-tab.active{background:#1e293b;color:#818cf8;}
+
+    /* Image Preview Animation */
+    .img-preview-box {
+      width: 100%;
+      height: 150px;
+      overflow: hidden;
+      border-radius: 0.75rem;
+      border: 2px dashed #cbd5e1;
+      margin-top: 0.5rem;
+      background: #f8fafc;
+    }
+    .img-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease-in-out;
+    }
+    .img-preview-box:hover img {
+      transform: scale(1.15);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -180,15 +201,25 @@
           <div><label class="block text-sm font-semibold text-slate-700 mb-2">Venue Capacity</label><input type="number" name="venueCapacity" required min="1" class="pro-input"></div>
           <div><label class="block text-sm font-semibold text-slate-700 mb-2">Event Date & Time</label><input type="datetime-local" name="eventDate" required class="pro-input"></div>
           <div><label class="block text-sm font-semibold text-slate-700 mb-2">Total Tickets</label><input type="number" name="totalTickets" required min="1" class="pro-input"></div>
-          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Price (USD)</label><input type="number" name="price" required step="0.01" min="0" class="pro-input"></div>
-          <div class="md:col-span-2"><label class="block text-sm font-semibold text-slate-700 mb-2">Description</label><textarea name="description" rows="3" class="pro-input resize-none"></textarea></div>
-          <div class="md:col-span-2"><button type="submit" class="btn-primary px-8">Create Event</button></div>
+          <div><label class="block text-sm font-semibold text-slate-700 mb-2">Price (Rs)</label><input type="number" name="price" required step="0.01" min="0" class="pro-input"></div>
+
+          <div class="md:col-span-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Image URL (Optional)</label>
+            <input type="url" name="imageUrl" class="pro-input" placeholder="https://..."
+                   oninput="document.getElementById('eventImgPreview').src = this.value || 'https://placehold.co/600x400?text=Event+Image'">
+            <div class="img-preview-box">
+              <img id="eventImgPreview" src="https://placehold.co/600x400?text=Event+Image" alt="Event Preview">
+            </div>
+          </div>
+
+          <div class="md:col-span-1"><label class="block text-sm font-semibold text-slate-700 mb-2">Description</label><textarea name="description" rows="5" class="pro-input resize-none h-full"></textarea></div>
+          <div class="md:col-span-2 mt-4"><button type="submit" class="btn-primary px-8 w-full py-3">Create Event</button></div>
         </form>
       </div>
 
       <table class="w-full pro-table">
         <thead>
-        <tr><th>Title</th><th>Category</th><th>Venue</th><th>Tickets</th><th>Price</th><th>Actions</th></tr>
+        <tr><th>Title</th><th>Category</th><th>Venue</th><th>Tickets</th><th>Price (Rs)</th><th>Actions</th></tr>
         </thead>
         <tbody>
         <tr th:each="event : ${allEvents}">
@@ -196,7 +227,7 @@
           <td><span class="badge bg-primary-100 text-primary-700" th:text="${event.category}">Cat</span></td>
           <td class="text-slate-500 text-sm" th:text="${event.venue}">Venue</td>
           <td><span class="font-semibold" th:text="${event.availableTickets}">0</span><span class="text-slate-400 text-xs"> Available</span></td>
-          <td class="font-semibold" th:text="'$' + ${event.price}">$0</td>
+          <td class="font-semibold" th:text="'Rs. ' + ${event.price}">Rs. 0</td>
           <td>
             <div class="flex gap-2">
               <a th:href="@{'/events/admin-edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
