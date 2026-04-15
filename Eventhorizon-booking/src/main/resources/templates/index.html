@@ -111,18 +111,27 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div th:each="event : ${featuredEvents}" class="pro-card event-card overflow-hidden">
-        <div class="h-48 bg-gradient-to-br from-primary-400 to-purple-600 relative">
-          <div class="absolute inset-0 flex items-center justify-center">
+      <div th:each="event : ${featuredEvents}" class="pro-card event-card overflow-hidden group">
+
+        <div class="h-48 relative overflow-hidden">
+          <img th:if="${event.imageUrl != null and !event.imageUrl.isEmpty()}"
+               th:src="${event.imageUrl}"
+               alt="Event Image"
+               class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+
+          <div th:unless="${event.imageUrl != null and !event.imageUrl.isEmpty()}"
+               class="absolute inset-0 bg-gradient-to-br from-primary-400 to-purple-600 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
             <i data-lucide="calendar" class="w-16 h-16 text-white opacity-30"></i>
           </div>
-          <div class="absolute top-4 left-4">
-            <span class="badge bg-white text-primary-700" th:text="${event.category}">Category</span>
+
+          <div class="absolute top-4 left-4 z-10">
+            <span class="badge bg-white shadow-sm text-primary-700 text-xs" th:text="${event.category}">Category</span>
           </div>
-          <div class="absolute bottom-4 right-4">
-            <span class="text-white font-bold text-xl" th:text="'$' + ${event.price}">$0</span>
+          <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur rounded-lg px-3 py-1 z-10">
+            <span class="text-white font-bold text-lg" th:text="'Rs. ' + ${event.price}">Rs. 0</span>
           </div>
         </div>
+
         <div class="p-5">
           <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-2" th:text="${event.title}">Event Title</h3>
           <div class="flex items-center gap-2 text-sm text-slate-500 mb-2">
