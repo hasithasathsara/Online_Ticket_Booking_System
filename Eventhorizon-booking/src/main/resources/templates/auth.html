@@ -3,11 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign In — EventHorizon</title>
+  <title>Sign In & Register — EventHorizon</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
   <link rel="stylesheet" th:href="@{/style.css}">
+
+  <style>
+    .input-error { border-color: #ef4444 !important; }
+    .input-error:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important; }
+  </style>
 </head>
 <body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-primary-50 dark:from-slate-900 dark:to-slate-800 px-4 py-12">
 
@@ -42,7 +47,7 @@
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
-          <input type="email" name="email" required placeholder="you@example.com" class="pro-input">
+          <input type="email" name="email" required placeholder="you@gmail.com" class="pro-input">
         </div>
         <div>
           <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Password</label>
@@ -65,22 +70,46 @@
     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-2">Create account</h2>
     <p class="text-slate-500 text-sm mb-6">Join thousands of event lovers</p>
 
-    <form th:action="@{/users/register}" method="post">
+    <form th:action="@{/users/register}" method="post" onsubmit="return validateForm()">
       <div class="space-y-4">
+
         <div>
           <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
           <input type="text" name="name" required placeholder="John Doe" class="pro-input">
         </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Mobile Number</label>
+          <input type="text" id="phoneInput" name="phoneNumber" required maxlength="10" placeholder="07XXXXXXXX" class="pro-input" oninput="checkPhone()">
+          <p id="phoneError" class="text-red-500 text-xs mt-1 font-medium hidden">Invalid format! Please enter exactly 10 digits.</p>
+        </div>
+
         <div>
           <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
-          <input type="email" name="email" required placeholder="you@example.com" class="pro-input">
+          <input type="email" id="emailInput" name="email" required placeholder="you@gmail.com" class="pro-input" oninput="checkEmail()">
+          <p id="emailError" class="text-red-500 text-xs mt-1 font-medium hidden">Invalid format! Please enter a valid email.</p>
         </div>
+
         <div>
           <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Password</label>
-          <input type="password" name="password" required placeholder="Min 6 characters" class="pro-input" minlength="6">
+          <input type="password" id="passwordInput" name="password" required placeholder="Min 6 characters" class="pro-input" minlength="6" oninput="checkPasswordMatch()">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Confirm Password</label>
+          <input type="password" id="confirmPasswordInput" name="confirmPassword" required placeholder="Re-enter password" class="pro-input" oninput="checkPasswordMatch()">
+          <p id="passwordError" class="text-red-500 text-xs mt-1 font-medium hidden">Passwords do not match!</p>
+        </div>
+
+        <div class="flex items-start gap-3 mt-4">
+          <input type="checkbox" id="terms" name="terms" required class="mt-1 w-4 h-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500">
+          <label for="terms" class="text-sm text-slate-600 dark:text-slate-400 leading-tight">
+            I agree to the <a href="#" class="text-primary-600 hover:underline">Terms & Conditions</a> and Privacy Policy.
+          </label>
         </div>
       </div>
-      <button type="submit" class="btn-primary w-full mt-6 py-3.5 text-base">
+
+      <button type="submit" id="registerBtn" class="btn-primary w-full mt-6 py-3.5 text-base opacity-50 cursor-not-allowed" disabled>
         Create My Account
       </button>
     </form>
@@ -93,11 +122,13 @@
 
 <script>
   lucide.createIcons();
+
   function showTab(tab) {
-    const loginForm    = document.getElementById('loginForm');
+    const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    const loginTab     = document.getElementById('loginTab');
-    const registerTab  = document.getElementById('registerTab');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+
     if (tab === 'login') {
       loginForm.classList.remove('hidden');
       registerForm.classList.add('hidden');
@@ -105,6 +136,7 @@
       loginTab.classList.remove('text-slate-500');
       registerTab.classList.remove('bg-white','dark:bg-slate-700','text-slate-900','shadow-sm');
       registerTab.classList.add('text-slate-500');
+      window.history.pushState(null, null, '#login');
     } else {
       registerForm.classList.remove('hidden');
       loginForm.classList.add('hidden');
@@ -112,9 +144,85 @@
       registerTab.classList.remove('text-slate-500');
       loginTab.classList.remove('bg-white','dark:bg-slate-700','text-slate-900','shadow-sm');
       loginTab.classList.add('text-slate-500');
+      window.history.pushState(null, null, '#register');
     }
   }
-  if (window.location.hash === '#register') showTab('register');
+
+  if (window.location.hash === '#register' || window.location.href.includes("error")) {
+      showTab('register');
+  }
+
+  const phoneRegex = /^[0-9]{10}$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  function checkPhone() {
+    const phoneInput = document.getElementById('phoneInput');
+    const phoneError = document.getElementById('phoneError');
+    phoneInput.value = phoneInput.value.replace(/[^0-9]/g, '');
+
+    if (phoneInput.value.length > 0 && !phoneRegex.test(phoneInput.value)) {
+      phoneInput.classList.add('input-error');
+      phoneError.classList.remove('hidden');
+    } else {
+      phoneInput.classList.remove('input-error');
+      phoneError.classList.add('hidden');
+    }
+    checkAllValidations();
+  }
+
+  function checkEmail() {
+    const emailInput = document.getElementById('emailInput');
+    const emailError = document.getElementById('emailError');
+    if (emailInput.value.length > 0 && !emailRegex.test(emailInput.value)) {
+      emailInput.classList.add('input-error');
+      emailError.classList.remove('hidden');
+    } else {
+      emailInput.classList.remove('input-error');
+      emailError.classList.add('hidden');
+    }
+    checkAllValidations();
+  }
+
+  function checkPasswordMatch() {
+    const password = document.getElementById('passwordInput').value;
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+    const passwordError = document.getElementById('passwordError');
+
+    if (confirmPasswordInput.value.length > 0 && password !== confirmPasswordInput.value) {
+      confirmPasswordInput.classList.add('input-error');
+      passwordError.classList.remove('hidden');
+    } else {
+      confirmPasswordInput.classList.remove('input-error');
+      passwordError.classList.add('hidden');
+    }
+    checkAllValidations();
+  }
+
+  function checkAllValidations() {
+    const isPhoneValid = phoneRegex.test(document.getElementById('phoneInput').value);
+    const isEmailValid = emailRegex.test(document.getElementById('emailInput').value);
+    const pass = document.getElementById('passwordInput').value;
+    const confirmPass = document.getElementById('confirmPasswordInput').value;
+    const isPassMatch = pass.length >= 6 && pass === confirmPass;
+    const isTermsChecked = document.getElementById('terms').checked;
+    const btn = document.getElementById('registerBtn');
+
+    if (isPhoneValid && isEmailValid && isPassMatch && isTermsChecked) {
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+      btn.disabled = true;
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+  }
+
+  document.getElementById('terms').addEventListener('change', checkAllValidations);
+
+  function validateForm() {
+      const btn = document.getElementById('registerBtn');
+      if(btn.disabled) return false;
+      return true;
+  }
 </script>
 </body>
 </html>

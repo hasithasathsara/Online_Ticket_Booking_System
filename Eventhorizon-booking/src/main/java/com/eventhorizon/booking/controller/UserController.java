@@ -25,22 +25,37 @@ public class UserController {
         return "auth";
     }
 
+    // ALUTH REGISTER METHOD EKA (Confirm Password & Phone Number ekka)
     @PostMapping("/register")
     public String registerUser(@RequestParam String name,
                                @RequestParam String email,
+                               @RequestParam String phoneNumber,
                                @RequestParam String password,
+                               @RequestParam String confirmPassword,
                                RedirectAttributes redirectAttributes) {
-        if (userRepository.existsByEmail(email)) {
-            redirectAttributes.addFlashAttribute("error", "Email already registered!");
-            return "redirect:/users/register";
+
+        // Confirm Password check
+        if (!password.equals(confirmPassword)) {
+            redirectAttributes.addFlashAttribute("error", "Passwords match wenne na! Ayeth try karanna.");
+            return "redirect:/users/login#register";
         }
+
+        // Email eka kalin use karalada kiyala check karanna
+        if (userRepository.existsByEmail(email)) {
+            redirectAttributes.addFlashAttribute("error", "Me email eken kalin account ekak hadala tiyenne!");
+            return "redirect:/users/login#register";
+        }
+
+        // Aluth user kenek hadala phone number eka set karanna
         RegularUser newUser = new RegularUser(name, email, password);
+        newUser.setPhoneNumber(phoneNumber);
+
         userRepository.save(newUser);
-        redirectAttributes.addFlashAttribute("success", "Account created! Please login.");
+
+        redirectAttributes.addFlashAttribute("success", "Account eka hadala iwarai! Login wenna.");
         return "redirect:/users/login";
     }
 
-    // UPDATED: Dynamic Login URL passed to view
     @GetMapping("/login")
     public String showLoginPage(Model model) {
         model.addAttribute("loginAction", "/users/login");
@@ -59,11 +74,13 @@ public class UserController {
             return "redirect:/users/login";
         }
 
-        // 🌟 🌟 🌟 FIX FOR ADMIN BUG 🌟 🌟 🌟
+        if ("admin".equals(userOpt.get().getUserType())) {
+            redirectAttributes.addFlashAttribute("error", "Please use the Admin portal to log in!");
+            return "redirect:/users/login";
+        }
 
         session.removeAttribute("loggedInAdmin");
         session.removeAttribute("isAdmin");
-        // 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟 🌟
 
         session.setAttribute("loggedInUser", userOpt.get());
         session.setAttribute("userId", userOpt.get().getId());
@@ -114,6 +131,7 @@ public class UserController {
         User user = userOpt.get();
         user.setName(name);
         user.setEmail(email);
+
         if (password != null && !password.isEmpty()) {
             user.setPassword(password);
         }
@@ -131,6 +149,7 @@ public class UserController {
                              HttpSession session,
                              RedirectAttributes redirectAttributes) {
         userRepository.deleteById(id);
+
         session.invalidate();
         redirectAttributes.addFlashAttribute("success", "Account deleted successfully.");
         return "redirect:/";
