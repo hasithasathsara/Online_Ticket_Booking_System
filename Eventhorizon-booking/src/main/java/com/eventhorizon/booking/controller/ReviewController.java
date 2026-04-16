@@ -24,8 +24,29 @@ public class ReviewController {
     private EventRepository eventRepository;
 
     @GetMapping
-    public String viewAllReviews(Model model) {
-        List<Review> reviews = reviewRepository.findAll();
+    public String viewAllReviews(HttpSession session, Model model) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        Boolean isAdmin = (Boolean) session.getAttribute("isAdmin");
+
+        List<Review> reviews;
+
+        if (isAdmin != null && isAdmin) {
+            // Admins lata okkoma reviews penawa
+            reviews = reviewRepository.findAll();
+            model.addAttribute("pageTitle", "All User Reviews");
+            model.addAttribute("pageDesc", "Admin Moderation View");
+        } else if (loggedInUser != null) {
+            // Log wela inna userta eyage reviews witarak penawa!
+            reviews = reviewRepository.findByUserId(loggedInUser.getId());
+            model.addAttribute("pageTitle", "My Reviews");
+            model.addAttribute("pageDesc", "Manage your event reviews");
+        } else {
+            // Log wela nathi ayata public reviews penawa
+            reviews = reviewRepository.findAll();
+            model.addAttribute("pageTitle", "Event Reviews");
+            model.addAttribute("pageDesc", "Discover what our community is saying");
+        }
+
         model.addAttribute("reviews", reviews);
         model.addAttribute("events", eventRepository.findAll());
         return "reviews";
@@ -46,7 +67,6 @@ public class ReviewController {
                                HttpSession session,
                                RedirectAttributes redirectAttributes) {
 
-        // Block Admins from submitting reviews
         if (session.getAttribute("isAdmin") != null) {
             redirectAttributes.addFlashAttribute("error", "Admins cannot submit reviews.");
             return "redirect:/reviews";
@@ -89,7 +109,6 @@ public class ReviewController {
 
         Review review = reviewOpt.get();
 
-        // Only the exact owner can edit their review
         if (!review.getUserId().equals(loggedInUser.getId())) {
             redirectAttributes.addFlashAttribute("error", "You can only edit your own reviews!");
             return "redirect:/reviews";
@@ -111,7 +130,6 @@ public class ReviewController {
         boolean isAdmin = session.getAttribute("isAdmin") != null;
         User loggedInUser = (User) session.getAttribute("loggedInUser");
 
-        // Must be logged in as either Admin or User
         if (!isAdmin && loggedInUser == null) {
             return "redirect:/users/login";
         }
@@ -124,7 +142,6 @@ public class ReviewController {
 
         Review review = reviewOpt.get();
 
-        // Allow deletion IF the user is an Admin OR the user is the owner of the review
         if (isAdmin || (loggedInUser != null && review.getUserId().equals(loggedInUser.getId()))) {
             reviewRepository.deleteById(id);
             redirectAttributes.addFlashAttribute("success", "Review deleted successfully.");

@@ -23,11 +23,15 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
+        // Featured events 3k witarak pennamu (UI eka lassanata thiyaganna)
         model.addAttribute("featuredEvents", eventRepository.findAll()
-            .stream().limit(3).toList());
+                .stream().limit(3).toList());
+
         model.addAttribute("totalEvents", eventRepository.count());
-        model.addAttribute("recentReviews", reviewRepository.findAll()
-            .stream().limit(6).toList());
+
+        // LIMIT EKA AYIN KALA: Okkoma reviews ganna
+        model.addAttribute("recentReviews", reviewRepository.findAll());
+
         return "index"; // → templates/index.html
     }
 }

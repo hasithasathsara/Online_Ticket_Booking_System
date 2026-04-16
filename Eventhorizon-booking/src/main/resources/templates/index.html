@@ -8,6 +8,21 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
   <link rel="stylesheet" th:href="@{/style.css}">
+
+  <style>
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-scroll {
+      display: flex;
+      width: max-content;
+      animation: scroll 40s linear infinite;
+    }
+    .animate-scroll:hover {
+      animation-play-state: paused;
+    }
+  </style>
 </head>
 <body>
 
@@ -191,28 +206,58 @@
   </div>
 </section>
 
-<section class="py-20 px-6 bg-slate-50 dark:bg-slate-900/30" th:if="${not #lists.isEmpty(recentReviews)}">
-  <div class="max-w-7xl mx-auto">
+<section class="py-20 bg-slate-50 dark:bg-slate-900/30 overflow-hidden" th:if="${not #lists.isEmpty(recentReviews)}">
+  <div class="max-w-7xl mx-auto px-6">
     <div class="text-center mb-10">
       <h2 class="text-3xl font-extrabold text-slate-900 dark:text-white mb-4">What People Say</h2>
+      <p class="text-slate-500">Real experiences from our event attendees</p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div th:each="review : ${recentReviews}" class="pro-card p-6">
-        <div class="flex items-center gap-1 mb-3">
-          <span th:each="i : ${#numbers.sequence(1, review.rating)}" class="text-yellow-400">★</span>
-          <span th:each="i : ${#numbers.sequence(review.rating + 1, 5)}" class="text-slate-300">★</span>
+  </div>
+
+  <div class="relative w-full">
+    <div class="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-slate-50 dark:from-[#0b1120] to-transparent z-10 hidden md:block"></div>
+    <div class="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-slate-50 dark:from-[#0b1120] to-transparent z-10 hidden md:block"></div>
+
+    <div class="animate-scroll gap-6 px-6">
+
+      <div th:each="review : ${recentReviews}" class="pro-card p-6 w-[350px] flex-shrink-0 whitespace-normal bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-1 mb-4">
+          <span th:each="i : ${#numbers.sequence(1, 5)}"
+                class="text-lg"
+                th:classappend="${i <= review.rating ? 'text-yellow-400' : 'text-slate-200'}">★</span>
         </div>
-        <p class="text-slate-600 dark:text-slate-300 text-sm mb-4" th:text="${review.comment}">Comment</p>
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-            <span class="text-primary-700 font-bold text-xs" th:text="${#strings.substring(review.userName, 0, 1)}">U</span>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed italic">"<span th:text="${review.comment}"></span>"</p>
+
+        <div class="flex items-center gap-3 mt-auto">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-purple-500 flex items-center justify-center shadow-sm">
+            <span class="text-white font-bold text-sm" th:text="${#strings.substring(review.userName, 0, 1)}">U</span>
           </div>
           <div>
-            <div class="text-sm font-semibold text-slate-900 dark:text-white" th:text="${review.userName}">Name</div>
-            <div class="text-xs text-slate-500" th:text="${review.eventTitle}">Event</div>
+            <div class="text-sm font-bold text-slate-900 dark:text-white" th:text="${review.userName}">Name</div>
+            <div class="text-xs text-primary-600 font-medium" th:text="${review.eventTitle}">Event</div>
           </div>
         </div>
       </div>
+
+      <div th:each="review : ${recentReviews}" class="pro-card p-6 w-[350px] flex-shrink-0 whitespace-normal bg-white dark:bg-slate-800 shadow-md border border-slate-100 dark:border-slate-700">
+        <div class="flex items-center gap-1 mb-4">
+          <span th:each="i : ${#numbers.sequence(1, 5)}"
+                class="text-lg"
+                th:classappend="${i <= review.rating ? 'text-yellow-400' : 'text-slate-200'}">★</span>
+        </div>
+        <p class="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed italic">"<span th:text="${review.comment}"></span>"</p>
+
+        <div class="flex items-center gap-3 mt-auto">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-purple-500 flex items-center justify-center shadow-sm">
+            <span class="text-white font-bold text-sm" th:text="${#strings.substring(review.userName, 0, 1)}">U</span>
+          </div>
+          <div>
+            <div class="text-sm font-bold text-slate-900 dark:text-white" th:text="${review.userName}">Name</div>
+            <div class="text-xs text-primary-600 font-medium" th:text="${review.eventTitle}">Event</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -249,7 +294,7 @@
       </div>
     </div>
     <div class="border-t border-slate-800 mt-10 pt-8 text-center text-slate-500 text-sm">
-      © 2024 EventHorizon — SE1020 OOP Group Project
+      © 2026 EventHorizon — SE1020 OOP Group Project
     </div>
   </div>
 </footer>

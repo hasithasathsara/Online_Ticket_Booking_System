@@ -8,7 +8,7 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByEventId(Long eventId);
+
+    // Aluthin add kala - User ge ID eken reviews ganna
     List<Review> findByUserId(Long userId);
-    List<Review> findByIsVerified(boolean isVerified);
-    List<Review> findByRating(int rating);
 }
