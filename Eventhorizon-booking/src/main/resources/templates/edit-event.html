@@ -81,7 +81,7 @@
             <input type="url" name="imageUrl" th:value="${event.imageUrl}" class="pro-input" placeholder="https://..."
                    oninput="
                      if(this.value.startsWith('data:image')) {
-                       alert('ඔයා දීලා තියෙන්නේ Base64 කෝඩ් එකක්! කරුණාකරලා http:// හෝ https:// වලින් පටන් ගන්න නියම Image Link එකක් දෙන්න.');
+                       alert('Please upload  http:// or  https://  Image Link ');
                        this.value = '';
                      }
                      document.getElementById('editImgPreview').src = this.value || 'https://placehold.co/600x400?text=Event+Image'">
