@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout — EventHorizon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body class="bg-slate-50 min-h-screen py-10">
+
+<div class="max-w-3xl mx-auto px-6">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+
+    <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Complete Your Booking</h1>
+    <p class="text-slate-500 mb-8">Follow the steps below to secure your tickets for <span class="font-bold text-slate-800" th:text="${event.title}">Event Name</span>.</p>
+
+    <div class="bg-blue-50 rounded-xl p-5 mb-8 border border-blue-100">
+      <h3 class="font-bold text-blue-800 mb-3 text-lg">Order Summary</h3>
+
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-slate-600">Price per ticket:</span>
+        <span class="font-semibold text-slate-800">Rs. <span id="unitPrice" th:text="${event.price}">0</span></span>
+      </div>
+
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-slate-600">Quantity:</span>
+        <input type="number" id="ticketQty" oninput="updateTotal()"
+               class="border border-blue-200 rounded-lg px-3 py-1.5 w-24 text-right font-bold text-blue-900 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+               min="1" th:max="${event.availableTickets}" th:value="${quantity}">
+      </div>
+
+      <div class="flex justify-between items-center pt-4 border-t border-blue-200">
+        <span class="font-bold text-blue-900 text-lg">Total to Pay:</span>
+        <span class="font-extrabold text-blue-600 text-2xl">Rs. <span id="totalPriceDisplay" th:text="${totalPrice}">0</span></span>
+      </div>
+    </div>
+
+    <div class="mb-8 p-5 border rounded-xl bg-slate-100">
+      <h3 class="font-bold text-slate-800 mb-2">Bank Details for Deposit</h3>
+      <p class="text-sm text-slate-600 mb-2">Please transfer the total amount to the account below:</p>
+      <p class="font-semibold text-slate-800 text-sm">Bank: Commercial Bank | Branch: Malabe</p>
+      <p class="font-semibold text-slate-800 text-sm">Account Name: EventHorizon (Pvt) Ltd</p>
+      <p class="font-bold text-blue-600 text-lg mt-1 tracking-wider">100 234 5678</p>
+    </div>
+
+    <form th:action="@{/bookings/create}" method="post" enctype="multipart/form-data">
+      <input type="hidden" name="eventId" th:value="${event.id}">
+      <input type="hidden" id="formQuantity" name="quantity" th:value="${quantity}">
+
+      <div class="mb-6">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Upload Payment Slip (PNG, JPG)</label>
+        <input type="file" name="slipImage" accept="image/*" required
+               class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+      </div>
+
+      <div class="flex gap-4 mt-8">
+        <a href="/events" class="px-6 py-3 rounded-xl font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 transition-colors w-full text-center">Cancel</a>
+        <button type="submit" class="px-6 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors w-full shadow-md">
+          Submit Payment
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script th:inline="javascript">
+  lucide.createIcons();
+  function updateTotal() {
+      // Calculate new total when quantity changes
+      let unitPrice = parseFloat(document.getElementById("unitPrice").innerText);
+      let qtyInput = document.getElementById("ticketQty");
+      let qty = parseInt(qtyInput.value);
+      if (isNaN(qty) || qty < 1) qty = 1;
+
+      let total = unitPrice * qty;
+
+      document.getElementById("totalPriceDisplay").innerText = total.toFixed(2);
+      document.getElementById("formQuantity").value = qty; // Update hidden form input
+  }
+</script>
+</body>
+</html>

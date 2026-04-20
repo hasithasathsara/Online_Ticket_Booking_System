@@ -28,7 +28,6 @@
     </div>
 
     <div class="flex items-center gap-4">
-
       <th:block th:if="${session.loggedInAdmin != null}">
         <span class="text-sm font-bold text-red-500"> Admin View</span>
         <a href="/admin" class="btn-primary text-sm py-2 px-4">Back to Dashboard</a>
@@ -48,7 +47,6 @@
         <a href="/admin/login" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">Admin</a>
         <a href="/users/login" class="btn-primary text-sm py-2.5 px-5">Sign In</a>
       </th:block>
-
     </div>
   </div>
 </nav>
@@ -88,27 +86,20 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div th:each="event : ${events}" class="pro-card event-card overflow-hidden fade-in group">
-
       <div class="h-48 relative overflow-hidden">
-
         <img th:if="${event.imageUrl != null and !event.imageUrl.isEmpty()}"
-             th:src="${event.imageUrl}"
-             alt="Event Image"
+             th:src="${event.imageUrl}" alt="Event Image"
              class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-
         <div th:unless="${event.imageUrl != null and !event.imageUrl.isEmpty()}"
              class="absolute inset-0 bg-gradient-to-br from-primary-400 to-purple-600 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
           <i data-lucide="calendar" class="w-16 h-16 text-white opacity-30"></i>
         </div>
-
         <div class="absolute top-4 left-4 z-10">
           <span class="badge bg-white shadow-sm text-primary-700 text-xs" th:text="${event.category}">Category</span>
         </div>
-
         <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur rounded-lg px-3 py-1 z-10">
           <span class="text-white font-bold text-lg" th:text="'Rs. ' + ${event.price}">Rs. 0</span>
         </div>
-
         <div th:if="${event.availableTickets == 0}" class="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
           <span class="text-white font-bold text-xl tracking-widest">SOLD OUT</span>
         </div>
@@ -118,31 +109,20 @@
         <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-3 line-clamp-2" th:text="${event.title}">Event Title</h3>
         <div class="space-y-2 mb-4">
           <div class="flex items-center gap-2 text-sm text-slate-500">
-            <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i>
-            <span th:text="${event.venue}">Venue</span>
+            <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i><span th:text="${event.venue}">Venue</span>
           </div>
           <div class="flex items-center gap-2 text-sm text-slate-500">
-            <i data-lucide="ticket" class="w-4 h-4 flex-shrink-0"></i>
-            <span th:text="${event.availableTickets} + ' tickets available'">Tickets</span>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-slate-500" th:if="${event.description}">
-            <i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i>
-            <span class="line-clamp-1" th:text="${event.description}">Description</span>
+            <i data-lucide="ticket" class="w-4 h-4 flex-shrink-0"></i><span th:text="${event.availableTickets} + ' tickets available'">Tickets</span>
           </div>
         </div>
 
-        <form th:action="@{/bookings/create}" method="post" class="flex gap-2" th:if="${event.availableTickets > 0}">
+        <form th:action="@{/bookings/checkout}" method="post" class="flex gap-2" th:if="${event.availableTickets > 0}">
           <input type="hidden" name="eventId" th:value="${event.id}">
-          <input type="number" name="quantity" value="1" min="1"
-                 th:max="${event.availableTickets}"
-                 class="pro-input w-20 text-center py-2.5">
-          <button type="submit" class="btn-primary flex-1 text-sm py-2.5">
-            Book Now
-          </button>
+          <input type="number" name="quantity" value="1" min="1" th:max="${event.availableTickets}" class="pro-input w-20 text-center py-2.5">
+          <button type="submit" class="btn-primary flex-1 text-sm py-2.5">Book Now</button>
         </form>
-        <button th:if="${event.availableTickets == 0}" disabled class="btn-primary w-full opacity-50 cursor-not-allowed text-sm py-2.5">
-          Sold Out
-        </button>
+
+        <button th:if="${event.availableTickets == 0}" disabled class="btn-primary w-full opacity-50 cursor-not-allowed text-sm py-2.5">Sold Out</button>
       </div>
     </div>
   </div>
@@ -153,7 +133,6 @@
     © 2024 EventHorizon — SE1020 OOP Group Project
   </div>
 </footer>
-
 <script>lucide.createIcons();</script>
 </body>
 </html>

@@ -3,19 +3,12 @@ package com.eventhorizon.booking.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-// =============================================
-// BOOKING.JAVA — Member 03
-// OOP Concept: ENCAPSULATION + ABSTRACTION
-// Private status field — only changeable
-// through specific methods (not direct set)
-// =============================================
-
+// Represents a ticket booking in the system
 @Entity
 @Table(name = "bookings")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Booking {
 
-    // ── PRIVATE FIELDS ───────────────────────────
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,7 +26,7 @@ public class Booking {
     private int quantity;
 
     @Column(nullable = false)
-    private String status = "pending"; // pending, approved, rejected
+    private String status = "pending"; // pending, approved, or rejected
 
     @Column
     private LocalDateTime bookedAt = LocalDateTime.now();
@@ -41,19 +34,35 @@ public class Booking {
     @Column
     private String bookingType = "regular";
 
-    // ── CONSTRUCTORS ─────────────────────────────
+    // Variable to store the uploaded bank slip image path
+    @Column
+    private String paymentSlip;
+
+    // Default constructor required by JPA
     public Booking() {}
 
+    // Constructor with 4 parameters (Fallback)
     public Booking(Long userId, Long eventId, String eventTitle, int quantity) {
-        this.userId     = userId;
-        this.eventId    = eventId;
+        this.userId = userId;
+        this.eventId = eventId;
         this.eventTitle = eventTitle;
-        this.quantity   = quantity;
-        this.status     = "pending";
-        this.bookedAt   = LocalDateTime.now();
+        this.quantity = quantity;
+        this.status = "pending";
+        this.bookedAt = LocalDateTime.now();
     }
 
-    // ── ABSTRACTION — business logic hidden here ──
+    // Constructor with 5 parameters including the payment slip
+    public Booking(Long userId, Long eventId, String eventTitle, int quantity, String paymentSlip) {
+        this.userId = userId;
+        this.eventId = eventId;
+        this.eventTitle = eventTitle;
+        this.quantity = quantity;
+        this.paymentSlip = paymentSlip;
+        this.status = "pending";
+        this.bookedAt = LocalDateTime.now();
+    }
+
+    // Methods to change booking status
     public void approve() {
         if (this.status.equals("pending")) {
             this.status = "approved";
@@ -72,11 +81,12 @@ public class Booking {
         }
     }
 
+    // Status check methods
     public boolean isPending()  { return "pending".equals(status); }
     public boolean isApproved() { return "approved".equals(status); }
     public boolean isRejected() { return "rejected".equals(status); }
 
-    // ── GETTERS AND SETTERS ──────────────────────
+    // Getters and Setters
     public Long getId()                         { return id; }
     public void setId(Long id)                  { this.id = id; }
 
@@ -101,9 +111,12 @@ public class Booking {
     public String getBookingType()              { return bookingType; }
     public void setBookingType(String t)        { this.bookingType = t; }
 
-    // ── POLYMORPHISM ─────────────────────────────
+    public String getPaymentSlip()              { return paymentSlip; }
+    public void setPaymentSlip(String s)        { this.paymentSlip = s; }
+
+    // Returns a summary of the booking
     public String getDetails() {
         return "Booking #" + id + " | Event: " + eventTitle
-             + " | Qty: " + quantity + " | Status: " + status.toUpperCase();
+                + " | Qty: " + quantity + " | Status: " + status.toUpperCase();
     }
 }

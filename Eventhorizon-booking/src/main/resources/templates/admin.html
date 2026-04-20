@@ -11,30 +11,12 @@
   <style>
     .admin-tab.active{background:white;color:#4f46e5;box-shadow:0 1px 3px rgb(0 0 0/.1);}
     html.dark .admin-tab.active{background:#1e293b;color:#818cf8;}
-
-    /* Image Preview Animation */
-    .img-preview-box {
-      width: 100%;
-      height: 150px;
-      overflow: hidden;
-      border-radius: 0.75rem;
-      border: 2px dashed #cbd5e1;
-      margin-top: 0.5rem;
-      background: #f8fafc;
-    }
-    .img-preview-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.4s ease-in-out;
-    }
-    .img-preview-box:hover img {
-      transform: scale(1.15);
-      cursor: pointer;
-    }
+    .img-preview-box { width: 100%; height: 150px; overflow: hidden; border-radius: 0.75rem; border: 2px dashed #cbd5e1; margin-top: 0.5rem; background: #f8fafc; }
+    .img-preview-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease-in-out; }
+    .img-preview-box:hover img { transform: scale(1.15); cursor: pointer; }
   </style>
 </head>
-<body>
+<body class="bg-slate-50 dark:bg-slate-900">
 
 <nav class="nav-glass sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -119,18 +101,19 @@
   <div th:if="${admin?.adminLevel == 'super' or #strings.contains(admin?.permissions, 'bookings') or admin?.permissions == 'all'}"
        id="panel-bookings" class="fade-in">
     <div class="pro-card overflow-hidden">
-
       <div class="p-5 border-b border-slate-100 dark:border-slate-800">
         <h3 class="font-bold text-lg text-slate-900 dark:text-white">Pending Bookings</h3>
         <p class="text-sm text-slate-500">Approve or reject booking requests</p>
       </div>
+
       <div th:if="${#lists.isEmpty(pendingBookings)}" class="p-10 text-center text-slate-400">
         <i data-lucide="check-circle" class="w-10 h-10 mx-auto mb-2 text-green-400"></i>
         <p>All caught up! No pending bookings.</p>
       </div>
+
       <table class="w-full pro-table" th:if="${not #lists.isEmpty(pendingBookings)}">
         <thead>
-        <tr><th>#</th><th>Event</th><th>User ID</th><th>Qty</th><th>Date</th><th>Actions</th></tr>
+        <tr><th>#</th><th>Event</th><th>User ID</th><th>Qty</th><th>Date</th><th>Payment Slip</th><th>Actions</th></tr>
         </thead>
         <tbody>
         <tr th:each="b : ${pendingBookings}">
@@ -139,6 +122,13 @@
           <td class="text-slate-500 text-sm" th:text="${b.userId}">User</td>
           <td class="font-semibold" th:text="${b.quantity}">1</td>
           <td class="text-slate-500 text-sm" th:text="${#temporals.format(b.bookedAt, 'dd MMM')}">Date</td>
+          <td>
+            <a th:if="${b.paymentSlip != null}" th:href="${b.paymentSlip}" target="_blank"
+               class="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors">
+              <i data-lucide="image" class="w-4 h-4"></i> View Slip
+            </a>
+            <span th:if="${b.paymentSlip == null}" class="text-slate-400 text-xs italic">No Slip</span>
+          </td>
           <td>
             <div class="flex gap-2">
               <form th:action="@{/bookings/approve}" method="post">
@@ -157,12 +147,9 @@
 
       <div class="p-5 border-t-8 border-slate-50 dark:border-slate-900 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
         <h3 class="font-bold text-lg text-slate-900 dark:text-white">Booking History</h3>
-        <p class="text-sm text-slate-500">Previously approved or rejected bookings</p>
       </div>
       <table class="w-full pro-table">
-        <thead>
-        <tr><th>#</th><th>Event</th><th>User ID</th><th>Qty</th><th>Status</th></tr>
-        </thead>
+        <thead><tr><th>#</th><th>Event</th><th>User ID</th><th>Qty</th><th>Status</th></tr></thead>
         <tbody>
         <th:block th:each="b : ${allBookings}">
           <tr th:if="${!#strings.equalsIgnoreCase(b.status, 'pending')}">
@@ -173,14 +160,11 @@
             <td>
               <span th:if="${#strings.equalsIgnoreCase(b.status, 'approved')}" class="badge bg-green-100 text-green-700 font-bold px-2 py-1 rounded">Approved</span>
               <span th:if="${#strings.equalsIgnoreCase(b.status, 'rejected')}" class="badge bg-red-100 text-red-700 font-bold px-2 py-1 rounded">Rejected</span>
-
-              <span th:if="${!#strings.equalsIgnoreCase(b.status, 'approved') and !#strings.equalsIgnoreCase(b.status, 'rejected')}" class="badge bg-gray-100 text-gray-700" th:text="${b.status}">Unknown</span>
             </td>
           </tr>
         </th:block>
         </tbody>
       </table>
-
     </div>
   </div>
 
@@ -218,9 +202,7 @@
       </div>
 
       <table class="w-full pro-table">
-        <thead>
-        <tr><th>Title</th><th>Category</th><th>Venue</th><th>Tickets</th><th>Price (Rs)</th><th>Actions</th></tr>
-        </thead>
+        <thead><tr><th>Title</th><th>Category</th><th>Venue</th><th>Tickets</th><th>Price (Rs)</th><th>Actions</th></tr></thead>
         <tbody>
         <tr th:each="event : ${allEvents}">
           <td class="font-semibold text-slate-900 dark:text-white" th:text="${event.title}">Title</td>
@@ -230,7 +212,7 @@
           <td class="font-semibold" th:text="'Rs. ' + ${event.price}">Rs. 0</td>
           <td>
             <div class="flex gap-2">
-              <a th:href="@{'/events/admin-edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
+              <a th:href="@{'/events/admin-edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3">Edit</a>
               <form th:action="@{/events/delete}" method="post" class="inline">
                 <input type="hidden" name="id" th:value="${event.id}">
                 <button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this event?')">Delete</button>
@@ -281,7 +263,6 @@
           <div class="md:col-span-2"><button type="submit" class="btn-primary px-8">Create Admin</button></div>
         </form>
       </div>
-
       <table class="w-full pro-table">
         <thead><tr><th>Name</th><th>Email</th><th>Level</th><th>Permissions</th><th>Actions</th></tr></thead>
         <tbody>
@@ -304,6 +285,7 @@
       </table>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -312,19 +294,11 @@
     ['bookings','events','users','admins'].forEach(p => {
       let panel = document.getElementById('panel-' + p);
       let tab = document.getElementById('tab-' + p);
-      if(panel && tab) {
-        panel.classList.add('hidden');
-        tab.classList.remove('active');
-        tab.classList.add('text-slate-500');
-      }
+      if(panel && tab) { panel.classList.add('hidden'); tab.classList.remove('active'); tab.classList.add('text-slate-500'); }
     });
     let actPanel = document.getElementById('panel-' + name);
     let actTab = document.getElementById('tab-' + name);
-    if(actPanel && actTab) {
-      actPanel.classList.remove('hidden');
-      actTab.classList.add('active');
-      actTab.classList.remove('text-slate-500');
-    }
+    if(actPanel && actTab) { actPanel.classList.remove('hidden'); actTab.classList.add('active'); actTab.classList.remove('text-slate-500'); }
   }
 </script>
 </body>

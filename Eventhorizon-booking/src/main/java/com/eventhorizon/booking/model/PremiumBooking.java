@@ -2,13 +2,7 @@ package com.eventhorizon.booking.model;
 
 import jakarta.persistence.*;
 
-// =============================================
-// PREMIUMBOOKING.JAVA — Member 03
-// OOP Concept: INHERITANCE + POLYMORPHISM
-// PremiumBooking EXTENDS Booking
-// Adds: prioritySeat, vipLounge access
-// =============================================
-
+// PremiumBooking inherits from Booking (OOP: Inheritance)
 @Entity
 @Table(name = "premium_bookings")
 public class PremiumBooking extends Booking {
@@ -22,21 +16,25 @@ public class PremiumBooking extends Booking {
     @Column
     private String seatNumber;
 
-    // ── CONSTRUCTORS ─────────────────────────────
+    // Default constructor
     public PremiumBooking() {
         super();
         setBookingType("premium");
     }
 
+    // Constructor that passes the payment slip to the parent Booking class
     public PremiumBooking(Long userId, Long eventId, String eventTitle,
-                          int quantity, boolean vipLounge) {
-        super(userId, eventId, eventTitle, quantity);
-        this.prioritySeat    = true;
+                          int quantity, String paymentSlip, boolean vipLounge) {
+
+        // Pass all 5 variables to the Parent class
+        super(userId, eventId, eventTitle, quantity, paymentSlip);
+
+        this.prioritySeat = true;
         this.vipLoungeAccess = vipLounge;
         setBookingType("premium");
     }
 
-    // ── GETTERS AND SETTERS ──────────────────────
+    // Getters and Setters
     public boolean isPrioritySeat()              { return prioritySeat; }
     public void setPrioritySeat(boolean p)       { this.prioritySeat = p; }
 
@@ -46,14 +44,14 @@ public class PremiumBooking extends Booking {
     public String getSeatNumber()                { return seatNumber; }
     public void setSeatNumber(String s)          { this.seatNumber = s; }
 
-    // ── POLYMORPHISM — overrides parent ──────────
+    // Overrides the parent method to show VIP details (OOP: Polymorphism)
     @Override
     public String getDetails() {
         return "VIP Booking #" + getId()
-             + " | Event: " + getEventTitle()
-             + " | Qty: " + getQuantity()
-             + " | Priority Seat: Yes"
-             + " | VIP Lounge: " + (vipLoungeAccess ? "Yes" : "No")
-             + " | Status: " + getStatus().toUpperCase();
+                + " | Event: " + getEventTitle()
+                + " | Qty: " + getQuantity()
+                + " | Priority Seat: Yes"
+                + " | VIP Lounge: " + (vipLoungeAccess ? "Yes" : "No")
+                + " | Status: " + getStatus().toUpperCase();
     }
 }
