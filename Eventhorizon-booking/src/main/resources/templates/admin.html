@@ -11,9 +11,27 @@
   <style>
     .admin-tab.active{background:white;color:#4f46e5;box-shadow:0 1px 3px rgb(0 0 0/.1);}
     html.dark .admin-tab.active{background:#1e293b;color:#818cf8;}
-    .img-preview-box { width: 100%; height: 150px; overflow: hidden; border-radius: 0.75rem; border: 2px dashed #cbd5e1; margin-top: 0.5rem; background: #f8fafc; }
-    .img-preview-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease-in-out; }
-    .img-preview-box:hover img { transform: scale(1.15); cursor: pointer; }
+
+    /* Image Preview Animation */
+    .img-preview-box {
+      width: 100%;
+      height: 150px;
+      overflow: hidden;
+      border-radius: 0.75rem;
+      border: 2px dashed #cbd5e1;
+      margin-top: 0.5rem;
+      background: #f8fafc;
+    }
+    .img-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease-in-out;
+    }
+    .img-preview-box:hover img {
+      transform: scale(1.15);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900">
@@ -90,11 +108,11 @@
     </button>
     <button th:if="${admin?.adminLevel == 'super'}"
             onclick="showPanel('users')" id="tab-users" class="admin-tab flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all text-slate-500 whitespace-nowrap">
-      👥 Users
+      👥 Registered Users
     </button>
     <button th:if="${admin?.adminLevel == 'super'}"
             onclick="showPanel('admins')" id="tab-admins" class="admin-tab flex-1 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all text-slate-500 whitespace-nowrap">
-      🛡️ Admins
+      🛡️ System Admins
     </button>
   </div>
 
@@ -212,7 +230,7 @@
           <td class="font-semibold" th:text="'Rs. ' + ${event.price}">Rs. 0</td>
           <td>
             <div class="flex gap-2">
-              <a th:href="@{'/events/admin-edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3">Edit</a>
+              <a th:href="@{'/events/admin-edit/' + ${event.id}}" class="btn-secondary text-xs py-1.5 px-3 flex items-center justify-center">Edit</a>
               <form th:action="@{/events/delete}" method="post" class="inline">
                 <input type="hidden" name="id" th:value="${event.id}">
                 <button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this event?')">Delete</button>
@@ -227,9 +245,9 @@
 
   <div th:if="${admin?.adminLevel == 'super'}" id="panel-users" class="hidden fade-in">
     <div class="pro-card overflow-hidden">
-      <div class="p-5 border-b border-slate-100 dark:border-slate-800"><h3 class="font-bold text-lg text-slate-900 dark:text-white">All Users</h3></div>
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800"><h3 class="font-bold text-lg text-slate-900 dark:text-white">Registered Users Only</h3></div>
       <table class="w-full pro-table">
-        <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Type</th><th>Actions</th></tr></thead>
+        <thead><tr><th>#</th><th>Name</th><th>Email</th><th>User Type</th><th>Actions</th></tr></thead>
         <tbody>
         <tr th:each="user : ${allUsers}">
           <td class="text-slate-400 text-sm" th:text="${user.id}">1</td>
@@ -237,9 +255,12 @@
           <td class="text-slate-500 text-sm" th:text="${user.email}">Email</td>
           <td><span class="badge badge-active" th:text="${user.userType}">Type</span></td>
           <td>
-            <form th:action="@{/users/delete}" method="post" class="inline">
-              <input type="hidden" name="id" th:value="${user.id}"><button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this user?')">Delete</button>
-            </form>
+            <div class="flex gap-2">
+              <a th:href="@{'/users/admin-edit/' + ${user.id}}" class="btn-secondary text-xs py-1.5 px-3">Edit User</a>
+              <form th:action="@{/users/delete}" method="post" class="inline">
+                <input type="hidden" name="id" th:value="${user.id}"><button type="submit" class="btn-danger text-xs py-1.5 px-3" onclick="return confirm('Delete this user?')">Delete</button>
+              </form>
+            </div>
           </td>
         </tr>
         </tbody>
@@ -285,7 +306,6 @@
       </table>
     </div>
   </div>
-
 </div>
 
 <script>
@@ -294,11 +314,19 @@
     ['bookings','events','users','admins'].forEach(p => {
       let panel = document.getElementById('panel-' + p);
       let tab = document.getElementById('tab-' + p);
-      if(panel && tab) { panel.classList.add('hidden'); tab.classList.remove('active'); tab.classList.add('text-slate-500'); }
+      if(panel && tab) {
+        panel.classList.add('hidden');
+        tab.classList.remove('active');
+        tab.classList.add('text-slate-500');
+      }
     });
     let actPanel = document.getElementById('panel-' + name);
     let actTab = document.getElementById('tab-' + name);
-    if(actPanel && actTab) { actPanel.classList.remove('hidden'); actTab.classList.add('active'); actTab.classList.remove('text-slate-500'); }
+    if(actPanel && actTab) {
+      actPanel.classList.remove('hidden');
+      actTab.classList.add('active');
+      actTab.classList.remove('text-slate-500');
+    }
   }
 </script>
 </body>
