@@ -2,20 +2,14 @@ package com.eventhorizon.booking.model;
 
 import jakarta.persistence.*;
 
-// =============================================
-// ADMINUSER.JAVA — Member 05
-// OOP Concept: INHERITANCE
-// AdminUser EXTENDS User (from Member 01!)
-// This shows cross-member inheritance!
-// =============================================
-
+// AdminUser inherits from User class (OOP: Inheritance)
 @Entity
 @Table(name = "admins")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class AdminUser extends User {
 
     @Column
-    private String adminLevel = "moderator"; // moderator or super
+    private String adminLevel = "moderator"; // Can be 'moderator' or 'super'
 
     @Column
     private String permissions = "events,bookings";
@@ -23,12 +17,13 @@ public class AdminUser extends User {
     @Column
     private boolean isActive = true;
 
-    // ── CONSTRUCTORS ─────────────────────────────
+    // Default constructor
     public AdminUser() {
         super();
-        setUserType("admin");
+        setUserType("admin"); // Setting user type to admin
     }
 
+    // Constructor with parameters to create a new admin
     public AdminUser(String name, String email, String password,
                      String adminLevel, String permissions) {
         super(name, email, password);
@@ -38,17 +33,18 @@ public class AdminUser extends User {
         setUserType("admin");
     }
 
-    // ── ADMIN-SPECIFIC METHODS (Abstraction) ─────
+    // Logic to check if admin has a specific permission
     public boolean hasPermission(String permission) {
         if (permissions == null) return false;
         return permissions.contains(permission) || "all".equals(permissions);
     }
 
+    // Permission check methods
     public boolean canManageEvents()   { return hasPermission("events"); }
     public boolean canManageUsers()    { return hasPermission("users"); }
     public boolean canManageBookings() { return hasPermission("bookings"); }
 
-    // ── GETTERS AND SETTERS ──────────────────────
+    // Getters and Setters
     public String getAdminLevel()               { return adminLevel; }
     public void setAdminLevel(String level)     { this.adminLevel = level; }
 
@@ -58,13 +54,13 @@ public class AdminUser extends User {
     public boolean isActive()                   { return isActive; }
     public void setActive(boolean active)       { this.isActive = active; }
 
-    // ── POLYMORPHISM ─────────────────────────────
+    // Overriding parent method to show admin specific details (OOP: Polymorphism)
     @Override
     public String getDetails() {
         return "Admin: " + getName()
-             + " | Level: " + adminLevel
-             + " | Permissions: " + permissions
-             + " | Active: " + isActive;
+                + " | Level: " + adminLevel
+                + " | Permissions: " + permissions
+                + " | Active: " + isActive;
     }
 
     @Override

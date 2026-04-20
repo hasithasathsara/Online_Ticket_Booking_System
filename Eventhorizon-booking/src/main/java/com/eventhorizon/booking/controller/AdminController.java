@@ -1,6 +1,7 @@
 package com.eventhorizon.booking.controller;
 
 import com.eventhorizon.booking.model.AdminUser;
+import com.eventhorizon.booking.model.User;
 import com.eventhorizon.booking.repository.AdminRepository;
 import com.eventhorizon.booking.repository.BookingRepository;
 import com.eventhorizon.booking.repository.EventRepository;
@@ -12,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
+// Controller for all Admin Panel operations
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -26,6 +30,7 @@ public class AdminController {
     @Autowired
     private BookingRepository bookingRepository;
 
+    // Creates the default Super Admin when the application starts
     @jakarta.annotation.PostConstruct
     public void initSuperAdmin() {
         try {
@@ -41,6 +46,7 @@ public class AdminController {
         }
     }
 
+    // Displays the Admin Dashboard with stats and tables
     @GetMapping
     public String adminDashboard(HttpSession session, Model model) {
         Object adminObj = session.getAttribute("loggedInAdmin");
@@ -51,20 +57,28 @@ public class AdminController {
 
         AdminUser admin = (AdminUser) adminObj;
 
+        // Statistics for dashboard cards
         model.addAttribute("totalUsers", userRepository.count());
         model.addAttribute("totalEvents", eventRepository.count());
         model.addAttribute("totalBookings", bookingRepository.count());
         model.addAttribute("pendingCount", bookingRepository.findByStatus("pending").size());
 
+        // Separate Regular Users from Admins for display
+        List<User> regularUsers = userRepository.findAll().stream()
+                .filter(u -> "regular".equals(u.getUserType()))
+                .collect(Collectors.toList());
+
         model.addAttribute("admin", admin);
-        model.addAttribute("allUsers", userRepository.findAll());
+        model.addAttribute("allUsers", regularUsers); // Only regular customers
+        model.addAttribute("allAdmins", adminRepository.findAll()); // Only system admins
         model.addAttribute("allEvents", eventRepository.findAll());
         model.addAttribute("allBookings", bookingRepository.findAll());
         model.addAttribute("pendingBookings", bookingRepository.findByStatus("pending"));
-        model.addAttribute("allAdmins", adminRepository.findAll());
 
         return "admin";
     }
+
+    // ── ADMIN AUTHENTICATION ───────────────────────
 
     @GetMapping("/login")
     public String showAdminLogin(Model model) {
@@ -84,13 +98,55 @@ public class AdminController {
             return "redirect:/admin/login";
         }
 
-        // Only save as Admin
         session.setAttribute("loggedInAdmin", adminOpt.get());
         session.setAttribute("isAdmin", true);
 
         redirectAttributes.addFlashAttribute("success", "Welcome, Admin " + adminOpt.get().getName() + "!");
         return "redirect:/admin";
     }
+
+    @GetMapping("/logout")
+    public String adminLogout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/";
+    }
+
+    // ── REGULAR USER MANAGEMENT ────────────────────
+
+    // Opens edit page for a specific regular user
+    @GetMapping("/edit-user/{id}")
+    public String showEditUserForm(@PathVariable Long id, Model model, HttpSession session) {
+        AdminUser currentAdmin = (AdminUser) session.getAttribute("loggedInAdmin");
+        if (currentAdmin == null || !"super".equals(currentAdmin.getAdminLevel())) return "redirect:/admin";
+
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            model.addAttribute("user", userOpt.get());
+            return "edit-user";
+        }
+        return "redirect:/admin";
+    }
+
+    // Updates a regular user's details
+    @PostMapping("/user/update")
+    public String updateUserByAdmin(@RequestParam Long id,
+                                    @RequestParam String name,
+                                    @RequestParam String email,
+                                    @RequestParam String phoneNumber,
+                                    RedirectAttributes ra) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setName(name);
+            user.setEmail(email);
+            user.setPhoneNumber(phoneNumber);
+            userRepository.save(user);
+            ra.addFlashAttribute("success", "User details updated successfully!");
+        }
+        return "redirect:/admin";
+    }
+
+    // ── SUB-ADMIN MANAGEMENT ───────────────────────
 
     @PostMapping("/create")
     public String createAdmin(@RequestParam String name,
@@ -100,9 +156,7 @@ public class AdminController {
                               HttpSession session,
                               RedirectAttributes redirectAttributes) {
         AdminUser currentAdmin = (AdminUser) session.getAttribute("loggedInAdmin");
-        if (currentAdmin == null || !"super".equals(currentAdmin.getAdminLevel())) {
-            return "redirect:/admin/login";
-        }
+        if (currentAdmin == null || !"super".equals(currentAdmin.getAdminLevel())) return "redirect:/admin/login";
 
         if (adminRepository.existsByEmail(email)) {
             redirectAttributes.addFlashAttribute("error", "Email already registered!");
@@ -112,11 +166,23 @@ public class AdminController {
         AdminUser newAdmin = new AdminUser(name, email, password, "moderator", permissions);
         adminRepository.save(newAdmin);
 
-        redirectAttributes.addFlashAttribute("success", "Admin account created!");
+        redirectAttributes.addFlashAttribute("success", "New Admin account created!");
         return "redirect:/admin";
     }
 
-    // SUPER ADMIN UPDATING A SUB-ADMIN
+    @GetMapping("/edit-subadmin/{id}")
+    public String showEditAdminForm(@PathVariable Long id, Model model, HttpSession session) {
+        AdminUser currentAdmin = (AdminUser) session.getAttribute("loggedInAdmin");
+        if (currentAdmin == null || !"super".equals(currentAdmin.getAdminLevel())) return "redirect:/admin";
+
+        Optional<AdminUser> targetAdmin = adminRepository.findById(id);
+        if (targetAdmin.isPresent()) {
+            model.addAttribute("targetAdmin", targetAdmin.get());
+            return "edit-admin";
+        }
+        return "redirect:/admin";
+    }
+
     @PostMapping("/update")
     public String updateAdmin(@RequestParam Long id,
                               @RequestParam String name,
@@ -124,18 +190,14 @@ public class AdminController {
                               @RequestParam String permissions,
                               RedirectAttributes redirectAttributes) {
         Optional<AdminUser> adminOpt = adminRepository.findById(id);
-        if (adminOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Admin not found!");
-            return "redirect:/admin";
+        if (adminOpt.isPresent()) {
+            AdminUser admin = adminOpt.get();
+            admin.setName(name);
+            admin.setEmail(email);
+            admin.setPermissions(permissions);
+            adminRepository.save(admin);
+            redirectAttributes.addFlashAttribute("success", "Admin details updated!");
         }
-
-        AdminUser admin = adminOpt.get();
-        admin.setName(name);
-        admin.setEmail(email); // Super Admin can change email
-        admin.setPermissions(permissions);
-        adminRepository.save(admin);
-
-        redirectAttributes.addFlashAttribute("success", "Admin updated successfully!");
         return "redirect:/admin";
     }
 
@@ -146,17 +208,8 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    @GetMapping("/logout")
-    public String adminLogout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
-    }
+    // ── PERSONAL PROFILE ───────────────────────────
 
-    // ==========================================
-    // NEW METHODS ADDED FOR PROFILE & EDITING
-    // ==========================================
-
-    // 1. Show Admin's own profile
     @GetMapping("/profile")
     public String showAdminProfile(HttpSession session, Model model) {
         AdminUser admin = (AdminUser) session.getAttribute("loggedInAdmin");
@@ -166,7 +219,6 @@ public class AdminController {
         return "admin-profile";
     }
 
-    // 2. Update Admin's own profile (No Email Update Allowed Here)
     @PostMapping("/profile/update")
     public String updateOwnProfile(@RequestParam String name,
                                    @RequestParam(required = false) String password,
@@ -175,7 +227,6 @@ public class AdminController {
         AdminUser currentAdmin = (AdminUser) session.getAttribute("loggedInAdmin");
         if (currentAdmin == null) return "redirect:/admin/login";
 
-        // Only Name and Password can be updated by the user themselves
         currentAdmin.setName(name);
         if (password != null && !password.isEmpty()) {
             currentAdmin.setPassword(password);
@@ -183,26 +234,7 @@ public class AdminController {
         adminRepository.save(currentAdmin);
 
         session.setAttribute("loggedInAdmin", currentAdmin);
-        redirectAttributes.addFlashAttribute("success", "Your profile was updated successfully!");
+        redirectAttributes.addFlashAttribute("success", "Your profile updated successfully!");
         return "redirect:/admin/profile";
-    }
-
-    // 3. Super Admin fetching Sub-Admin details for the Edit Form
-    @GetMapping("/edit-subadmin/{id}")
-    public String showEditAdminForm(@PathVariable Long id, Model model, HttpSession session) {
-        AdminUser currentAdmin = (AdminUser) session.getAttribute("loggedInAdmin");
-
-        // Block if not Super Admin
-        if (currentAdmin == null || !"super".equals(currentAdmin.getAdminLevel())) {
-            return "redirect:/admin";
-        }
-
-        Optional<AdminUser> targetAdmin = adminRepository.findById(id);
-        if (targetAdmin.isPresent()) {
-            model.addAttribute("targetAdmin", targetAdmin.get());
-            return "edit-admin";
-        }
-
-        return "redirect:/admin";
     }
 }
