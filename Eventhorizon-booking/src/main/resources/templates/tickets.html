@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Tickets — EventHorizon</title>
+  <title>Events — EventHorizon</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
   <link rel="stylesheet" th:href="@{/style.css}">
 </head>
-<body>
+<body class="bg-slate-50 dark:bg-slate-950">
 
 <nav class="nav-glass sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -20,99 +20,120 @@
       <span class="font-bold text-xl text-slate-900 dark:text-white">EventHorizon</span>
     </a>
     <div class="hidden md:flex items-center gap-6">
-      <a href="/" class="text-sm font-medium text-slate-600 hover:text-primary-600">Home</a>
-      <a href="/events" class="text-sm font-medium text-slate-600 hover:text-primary-600">Events</a>
-      <a href="/bookings" class="text-sm font-medium text-slate-600 hover:text-primary-600">My Bookings</a>
-      <a href="/tickets" class="text-sm font-semibold text-primary-600">My Tickets</a>
-      <a href="/reviews" class="text-sm font-medium text-slate-600 hover:text-primary-600">Reviews</a>
+      <a href="/" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">Home</a>
+      <a href="/events" class="text-sm font-semibold text-primary-600">Events</a>
+      <a href="/bookings" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">My Bookings</a>
+      <a href="/tickets" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">My Tickets</a>
+      <a href="/reviews" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">Reviews</a>
     </div>
 
-    <div class="flex items-center gap-3">
-      <a href="/admin/login"
-         class="text-sm font-medium text-slate-600 hover:text-primary-600">Admin</a>
+    <div class="flex items-center gap-4">
+      <th:block th:if="${session.loggedInAdmin != null}">
+        <span class="text-sm font-bold text-red-500"> Admin View</span>
+        <a href="/admin" class="btn-primary text-sm py-2 px-4">Back to Dashboard</a>
+      </th:block>
 
-      <div th:if="${session.loggedInUser == null}">
-        <a href="/users/login"
-           class="btn-primary text-sm py-2.5 px-5">Sign In</a>
-      </div>
-
-      <div th:if="${session.loggedInUser != null}"
-           class="flex items-center gap-3">
-
-        <a th:href="${session.isAdmin != null} ? '/admin' : '/users/profile'"
-           class="flex items-center gap-2 hover:opacity-80">
-          <div class="w-9 h-9 rounded-full bg-primary-600
-                  flex items-center justify-center
-                  text-white font-bold text-sm">
-        <span th:text="${#strings.substring(
-              session.loggedInUser.name,0,1)}">U</span>
+      <th:block th:if="${session.loggedInUser != null}">
+        <a href="/users/profile" class="flex items-center gap-2 hover:opacity-80">
+          <div class="w-9 h-9 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold text-sm">
+            <span th:text="${#strings.substring(session.loggedInUser.name, 0, 1)}">U</span>
           </div>
-          <span class="text-sm font-semibold text-slate-700"
-                th:text="${session.loggedInUser.name}">User</span>
+          <span class="text-sm font-semibold text-slate-700 dark:text-slate-300" th:text="${session.loggedInUser.name}">User</span>
         </a>
-        <a href="/users/logout"
-           class="btn-secondary text-sm py-2 px-4">Sign Out</a>
-      </div>
+        <a href="/users/logout" class="btn-secondary text-sm py-2 px-4">Sign Out</a>
+      </th:block>
+
+      <th:block th:if="${session.loggedInUser == null and session.loggedInAdmin == null}">
+        <a href="/admin/login" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600">Admin</a>
+        <a href="/users/login" class="btn-primary text-sm py-2.5 px-5">Sign In</a>
+      </th:block>
     </div>
   </div>
 </nav>
 
-<div class="max-w-7xl mx-auto px-6 py-10">
-  <div class="mb-8">
-    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">My Tickets</h1>
-    <p class="text-slate-500 mt-1">Your digital event tickets</p>
+<div class="relative overflow-hidden bg-[#1e1b4b] py-20 px-6">
+
+  <div class="absolute inset-0 opacity-50">
+    <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-500 blur-[120px]"></div>
+    <div class="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-primary-600 blur-[120px]"></div>
   </div>
 
-  <div th:if="${success}" class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl text-sm font-medium mb-6" th:text="${success}"></div>
-  <div th:if="${error}" class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium mb-6" th:text="${error}"></div>
+  <div class="max-w-7xl mx-auto relative z-10">
+    <div class="flex flex-col items-center text-center">
 
-  <div class="pro-card p-6 mb-8">
-    <h3 class="font-bold text-slate-900 dark:text-white mb-4">Search Ticket by Code</h3>
-    <form th:action="@{/tickets/search}" method="get" class="flex gap-3">
-      <input type="text" name="ticketCode" placeholder="e.g. TK-ABC12345" class="pro-input flex-1">
-      <button type="submit" class="btn-primary px-6">Search</button>
-    </form>
-    <div th:if="${ticket}" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
-      <p class="text-green-800 font-semibold" th:text="'Found: ' + ${ticket.ticketCode} + ' — ' + ${ticket.status}"></p>
-    </div>
-    <div th:if="${error}" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-      <p class="text-red-800 text-sm" th:text="${error}"></p>
-    </div>
-  </div>
-
-  <div th:if="${#lists.isEmpty(tickets)}" class="pro-card p-16 text-center">
-    <i data-lucide="ticket" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
-    <h3 class="text-xl font-bold text-slate-700 mb-2">No tickets yet</h3>
-    <p class="text-slate-500 mb-6">Book an event and get it approved to receive your tickets!</p>
-    <a href="/events" class="btn-primary inline-block">Browse Events</a>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6" th:if="${not #lists.isEmpty(tickets)}">
-    <div th:each="ticket : ${tickets}" class="dticket p-6">
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <div class="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">EventHorizon</div>
-          <div class="text-white font-bold text-xl" th:text="${ticket.eventTitle}">Event Name</div>
-        </div>
-        <span class="badge badge-active" th:if="${ticket.status == 'active'}">Active</span>
-        <span class="badge badge-used" th:if="${ticket.status == 'used'}">Used</span>
-        <span class="badge badge-cancelled" th:if="${ticket.status == 'cancelled'}">Cancelled</span>
+      <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-4 py-1.5 rounded-full text-[10px] font-black text-primary-200 mb-6 backdrop-blur-md uppercase tracking-[0.2em]">
+        Explore Events
       </div>
-      <div class="border-t border-white/20 pt-4 mt-4">
-        <div class="flex justify-between items-center">
-          <div>
-            <div class="text-white/70 text-xs mb-1">Ticket Code</div>
-            <div class="text-white font-bold text-lg font-mono" th:text="${ticket.ticketCode}">TK-XXXXX</div>
+
+      <h1 class="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
+        Browse <span class="text-primary-300">Events</span>
+      </h1>
+
+      <form th:action="@{/events}" method="get" class="w-full max-w-2xl group mb-10">
+        <div class="relative flex items-center bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/20 p-1.5 shadow-2xl transition-all group-focus-within:bg-white/15 group-focus-within:border-white/30">
+          <div class="flex-1 flex items-center px-4">
+            <i data-lucide="search" class="w-5 h-5 text-white/50"></i>
+            <input type="text" name="search" th:value="${search}"
+                   placeholder="What are you looking for?"
+                   class="w-full bg-transparent border-none text-white placeholder:text-white/40 py-3.5 px-3 focus:ring-0 text-base font-medium">
           </div>
-          <div class="text-right">
-            <div class="text-white/70 text-xs mb-1">Issued</div>
-            <div class="text-white text-sm" th:text="${#temporals.format(ticket.issuedAt, 'dd MMM yyyy')}">Date</div>
-          </div>
+          <button type="submit" class="bg-white text-primary-700 font-black px-8 py-3 rounded-xl transition-all hover:bg-primary-50 active:scale-95 shadow-xl">
+            Search
+          </button>
         </div>
+      </form>
+
+      <div class="flex flex-wrap gap-2 justify-center">
+        <a href="/events" class="px-6 py-2 rounded-xl text-xs font-black transition-all border border-white/10"
+           th:classappend="${param.category == null ? 'bg-white text-primary-700 shadow-lg' : 'bg-white/5 text-white hover:bg-white/10'}">
+          ALL
+        </a>
+
+        <a th:each="cat : ${ {'Music', 'Sports', 'Technology', 'Arts', 'Food'} }"
+           th:href="@{/events(category=${cat})}"
+           class="px-6 py-2 rounded-xl text-xs font-black transition-all border border-white/10"
+           th:classappend="${#strings.equals(param.category, cat) ? 'bg-primary-500 text-white shadow-lg border-primary-400' : 'bg-white/5 text-white hover:bg-white/10'}">
+          <span th:text="${cat == 'Music' ? '🎵 Music' : (cat == 'Sports' ? '🏅 Sports' : (cat == 'Technology' ? '💻 Tech' : (cat == 'Arts' ? '🎨 Arts' : '🍕 Food')))}"></span>
+        </a>
       </div>
     </div>
   </div>
 </div>
+
+<div class="max-w-7xl mx-auto px-6 py-16">
+  <div th:if="${#lists.isEmpty(events)}" class="text-center py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 shadow-sm">
+    <i data-lucide="calendar-x" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
+    <h3 class="text-xl font-bold text-slate-800 dark:text-white">No events found</h3>
+    <a href="/events" class="text-primary-600 font-bold mt-4 inline-block underline">Clear filters</a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div th:each="event : ${events}" class="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[32px] overflow-hidden">
+      <div class="h-60 relative overflow-hidden">
+        <img th:if="${event.imageUrl != null and !event.imageUrl.isEmpty()}" th:src="${event.imageUrl}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+        <div class="absolute bottom-4 right-4 bg-slate-900/80 backdrop-blur-md rounded-xl px-4 py-1.5 border border-white/10">
+          <span class="text-white font-black text-lg" th:text="'Rs. ' + ${event.price}">Rs. 0</span>
+        </div>
+      </div>
+      <div class="p-6">
+        <h3 class="font-black text-xl text-slate-900 dark:text-white mb-4 line-clamp-1" th:text="${event.title}">Event Title</h3>
+        <div class="space-y-3 mb-6 text-slate-500 font-medium text-sm">
+          <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4 text-primary-500"></i><span th:text="${event.venue}">Venue</span></div>
+          <div class="flex items-center gap-2"><i data-lucide="ticket" class="w-4 h-4 text-green-500"></i><span th:text="${event.availableTickets} + ' left'">Tickets</span></div>
+        </div>
+        <form th:action="@{/bookings/checkout}" method="post" class="flex gap-2" th:if="${event.availableTickets > 0}">
+          <input type="hidden" name="eventId" th:value="${event.id}">
+          <input type="number" name="quantity" value="1" min="1" class="w-20 bg-slate-50 dark:bg-slate-800 rounded-xl text-center font-bold">
+          <button type="submit" class="btn-primary flex-1 py-3 text-sm font-black shadow-lg">Book Now</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="bg-slate-950 text-white py-12 px-6 text-center border-t border-slate-900">
+  <p class="text-slate-500 text-sm font-medium">© 2026 EventHorizon — SE1020 OOP Group Project</p>
+</footer>
 
 <script>lucide.createIcons();</script>
 </body>

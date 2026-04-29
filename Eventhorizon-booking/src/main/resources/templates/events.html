@@ -9,7 +9,7 @@
   <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{primary:{50:'#eef2ff',100:'#e0e7ff',500:'#6366f1',600:'#4f46e5',700:'#4338ca'}}}}}</script>
   <link rel="stylesheet" th:href="@{/style.css}">
 </head>
-<body>
+<body class="bg-slate-50 dark:bg-slate-950">
 
 <nav class="nav-glass sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -51,88 +51,150 @@
   </div>
 </nav>
 
-<div class="bg-gradient-to-br from-primary-600 to-purple-700 py-14 px-6">
-  <div class="max-w-7xl mx-auto">
-    <h1 class="text-4xl font-extrabold text-white mb-3">Browse Events</h1>
-    <p class="text-primary-100 mb-8">Discover amazing events happening near you</p>
-    <form th:action="@{/events}" method="get" class="flex gap-3 max-w-2xl">
-      <input type="text" name="search" th:value="${search}" placeholder="Search events..." class="pro-input flex-1">
-      <button type="submit" class="btn-primary px-6">Search</button>
-    </form>
-    <div class="flex flex-wrap gap-2 mt-4">
-      <a href="/events" class="px-4 py-2 rounded-full text-sm font-semibold bg-white text-primary-700">All</a>
-      <a href="/events?category=Music" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🎵 Music</a>
-      <a href="/events?category=Sports" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🏅 Sports</a>
-      <a href="/events?category=Technology" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">💻 Tech</a>
-      <a href="/events?category=Arts" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🎨 Arts</a>
-      <a href="/events?category=Food" class="px-4 py-2 rounded-full text-sm font-semibold bg-white/20 text-white hover:bg-white hover:text-primary-700">🍕 Food</a>
+<div class="relative overflow-hidden bg-[#0f172a] py-20 px-6">
+
+  <div class="absolute inset-0 opacity-40">
+    <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-600 blur-[120px] animate-pulse"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600 blur-[120px]"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto relative z-10">
+    <div class="flex flex-col items-center text-center">
+
+      <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-[10px] font-black text-primary-300 mb-6 uppercase tracking-[0.2em] backdrop-blur-md">
+        Explore Sri Lanka
+      </div>
+
+      <h1 class="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight">
+        Browse <span class="text-primary-400">Events</span>
+      </h1>
+      <p class="text-slate-400 text-lg max-w-xl mb-10 font-medium leading-relaxed">
+        Discover and book the best experiences happening around you.
+      </p>
+
+      <form th:action="@{/events}" method="get" class="w-full max-w-2xl group">
+        <div class="relative flex items-center bg-slate-900/60 backdrop-blur-2xl rounded-2xl border border-white/10 p-1.5 shadow-2xl transition-all duration-300 group-focus-within:border-primary-500 group-focus-within:bg-slate-900/90">
+          <div class="flex-1 flex items-center px-4">
+            <i data-lucide="search" class="w-5 h-5 text-slate-500"></i>
+            <input type="text" name="search" th:value="${search}"
+                   placeholder="Search events, venues or artists..."
+                   class="w-full bg-transparent border-none text-white placeholder:text-slate-500 py-3.5 px-3 focus:ring-0 text-base">
+          </div>
+          <button type="submit" class="bg-primary-600 hover:bg-primary-500 text-white font-black px-8 py-3 rounded-xl transition-all shadow-lg active:scale-95">
+            Search
+          </button>
+        </div>
+      </form>
+
+      <div class="flex flex-wrap gap-2 mt-10 justify-center">
+        <a href="/events" class="px-6 py-2.5 rounded-xl text-xs font-black transition-all border border-white/10"
+           th:classappend="${param.category == null ? 'bg-white text-slate-900 shadow-xl' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}">
+          ALL
+        </a>
+
+        <a th:each="cat : ${ {'Music', 'Sports', 'Technology', 'Arts', 'Food'} }"
+           th:href="@{/events(category=${cat})}"
+           class="px-6 py-2.5 rounded-xl text-xs font-black transition-all border border-white/10"
+           th:classappend="${#strings.equals(param.category, cat) ? 'bg-white text-slate-900 shadow-xl scale-105' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}">
+          <span th:text="${cat == 'Music' ? '🎵 Music' : (cat == 'Sports' ? '🏅 Sports' : (cat == 'Technology' ? '💻 Tech' : (cat == 'Arts' ? '🎨 Arts' : '🍕 Food')))}"></span>
+        </a>
+      </div>
     </div>
   </div>
 </div>
 
-<div th:if="${success}" class="max-w-7xl mx-auto px-6 mt-4">
-  <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl text-sm font-medium" th:text="${success}"></div>
+<div th:if="${success}" class="max-w-7xl mx-auto px-6 mt-6">
+  <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-4 h-4"></i>
+    <span th:text="${success}"></span>
+  </div>
 </div>
-<div th:if="${error}" class="max-w-7xl mx-auto px-6 mt-4">
-  <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium" th:text="${error}"></div>
+<div th:if="${error}" class="max-w-7xl mx-auto px-6 mt-6">
+  <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
+    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+    <span th:text="${error}"></span>
+  </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-6 py-12">
-  <div th:if="${#lists.isEmpty(events)}" class="text-center py-20">
+<div class="max-w-7xl mx-auto px-6 py-16">
+
+  <div th:if="${#lists.isEmpty(events)}" class="text-center py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
     <i data-lucide="calendar-x" class="w-16 h-16 text-slate-300 mx-auto mb-4"></i>
-    <h3 class="text-xl font-bold text-slate-700 mb-2">No events found</h3>
-    <p class="text-slate-500">Try a different search or check back soon!</p>
+    <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">No events found</h3>
+    <p class="text-slate-500">Try adjusting your search or category filters.</p>
+    <a href="/events" class="text-primary-600 font-bold mt-4 inline-block underline">Clear all filters</a>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div th:each="event : ${events}" class="pro-card event-card overflow-hidden fade-in group">
-      <div class="h-48 relative overflow-hidden">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div th:each="event : ${events}" class="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[32px] overflow-hidden">
+      <div class="h-60 relative overflow-hidden">
         <img th:if="${event.imageUrl != null and !event.imageUrl.isEmpty()}"
              th:src="${event.imageUrl}" alt="Event Image"
-             class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+             class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+
         <div th:unless="${event.imageUrl != null and !event.imageUrl.isEmpty()}"
-             class="absolute inset-0 bg-gradient-to-br from-primary-400 to-purple-600 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+             class="absolute inset-0 bg-gradient-to-br from-primary-400 to-purple-600 flex items-center justify-center transition-transform duration-700 group-hover:scale-110">
           <i data-lucide="calendar" class="w-16 h-16 text-white opacity-30"></i>
         </div>
+
         <div class="absolute top-4 left-4 z-10">
-          <span class="badge bg-white shadow-sm text-primary-700 text-xs" th:text="${event.category}">Category</span>
+          <span class="bg-white/90 backdrop-blur shadow-sm text-primary-700 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg" th:text="${event.category}">Category</span>
         </div>
-        <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur rounded-lg px-3 py-1 z-10">
-          <span class="text-white font-bold text-lg" th:text="'Rs. ' + ${event.price}">Rs. 0</span>
+
+        <div class="absolute bottom-4 right-4 bg-slate-900/80 backdrop-blur-md rounded-xl px-4 py-1.5 z-10 border border-white/10">
+          <span class="text-white font-black text-lg" th:text="'Rs. ' + ${event.price}">Rs. 0</span>
         </div>
-        <div th:if="${event.availableTickets == 0}" class="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
-          <span class="text-white font-bold text-xl tracking-widest">SOLD OUT</span>
+
+        <div th:if="${event.availableTickets == 0}" class="absolute inset-0 bg-slate-950/80 flex items-center justify-center z-20 backdrop-blur-[2px]">
+          <span class="text-white font-black text-2xl tracking-[0.2em]">SOLD OUT</span>
         </div>
       </div>
 
-      <div class="p-5">
-        <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-3 line-clamp-2" th:text="${event.title}">Event Title</h3>
-        <div class="space-y-2 mb-4">
-          <div class="flex items-center gap-2 text-sm text-slate-500">
-            <i data-lucide="map-pin" class="w-4 h-4 flex-shrink-0"></i><span th:text="${event.venue}">Venue</span>
+      <div class="p-6">
+        <h3 class="font-black text-xl text-slate-900 dark:text-white mb-4 line-clamp-1 group-hover:text-primary-600 transition-colors" th:text="${event.title}">Event Title</h3>
+
+        <div class="space-y-3 mb-6">
+          <div class="flex items-center gap-3 text-sm text-slate-500 font-medium">
+            <div class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+              <i data-lucide="map-pin" class="w-4 h-4 text-primary-500"></i>
+            </div>
+            <span th:text="${event.venue}">Venue</span>
           </div>
-          <div class="flex items-center gap-2 text-sm text-slate-500">
-            <i data-lucide="ticket" class="w-4 h-4 flex-shrink-0"></i><span th:text="${event.availableTickets} + ' tickets available'">Tickets</span>
+          <div class="flex items-center gap-3 text-sm text-slate-500 font-medium">
+            <div class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center">
+              <i data-lucide="ticket" class="w-4 h-4 text-green-500"></i>
+            </div>
+            <span th:text="${event.availableTickets} + ' available'">Tickets</span>
           </div>
         </div>
 
         <form th:action="@{/bookings/checkout}" method="post" class="flex gap-2" th:if="${event.availableTickets > 0}">
           <input type="hidden" name="eventId" th:value="${event.id}">
-          <input type="number" name="quantity" value="1" min="1" th:max="${event.availableTickets}" class="pro-input w-20 text-center py-2.5">
-          <button type="submit" class="btn-primary flex-1 text-sm py-2.5">Book Now</button>
+          <input type="number" name="quantity" value="1" min="1" th:max="${event.availableTickets}"
+                 class="w-20 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-center font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500">
+          <button type="submit" class="btn-primary flex-1 py-3 text-sm font-black shadow-lg">Book Now</button>
         </form>
 
-        <button th:if="${event.availableTickets == 0}" disabled class="btn-primary w-full opacity-50 cursor-not-allowed text-sm py-2.5">Sold Out</button>
+        <button th:if="${event.availableTickets == 0}" disabled class="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-xl font-bold text-sm cursor-not-allowed">Sold Out</button>
       </div>
     </div>
   </div>
 </div>
 
-<footer class="bg-slate-900 text-white py-10 px-6 mt-10">
-  <div class="max-w-7xl mx-auto text-center text-slate-400 text-sm">
-    © 2024 EventHorizon — SE1020 OOP Group Project
+<footer class="bg-slate-950 text-white py-12 px-6 border-t border-slate-900">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
+        <i data-lucide="zap" class="w-4 h-4"></i>
+      </div>
+      <span class="font-black text-lg tracking-tight">EventHorizon</span>
+    </div>
+    <div class="text-slate-500 text-sm font-medium">
+      © 2026 EventHorizon — SE1020 OOP Group Project
+    </div>
   </div>
 </footer>
+
 <script>lucide.createIcons();</script>
 </body>
 </html>
